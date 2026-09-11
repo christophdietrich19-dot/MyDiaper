@@ -1,0 +1,10 @@
+{
+  "name": "MyDiaper",
+  "short_name": "MyDiaper",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f7fbfa",
+  "theme_color": "#e9f8f2",
+  "description": "Windel-Finder, Vorrat, Angebote und Windelbörse für Familien.",
+  "icons": [{"src":"assets/icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

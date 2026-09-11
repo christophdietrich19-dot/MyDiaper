@@ -1,0 +1,6 @@
+{
+  "appId": "de.christophit.mydiaper",
+  "appName": "MyDiaper",
+  "webDir": "www",
+  "server": { "androidScheme": "https" }
+}

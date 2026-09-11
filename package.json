@@ -1,0 +1,20 @@
+{
+  "name": "mydiaper",
+  "version": "1.0.0-test",
+  "private": true,
+  "description": "MyDiaper test prototype – static PWA prepared for later Capacitor wrapping.",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "serve": "npx serve .",
+    "build:web": "node scripts/build-web.js",
+    "cap:add:android": "npm run build:web && npx cap add android",
+    "cap:add:ios": "npm run build:web && npx cap add ios",
+    "cap:sync": "npm run build:web && npx cap sync"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.1",
+    "@capacitor/core": "^8.5.1",
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/ios": "^8.5.1"
+  }
+}

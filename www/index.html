@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#e9f8f2" />
+  <meta name="description" content="MyDiaper – Windel-Finder, Vorrat, Angebote und Windelbörse für Familien." />
+  <title>MyDiaper</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/reference.css" />
+</head>
+<body>
+  <aside id="desktopBrand" class="desktop-brand" aria-label="MyDiaper – Kleine Schritte. Große Abenteuer."></aside>
+  <div class="app-shell" id="appShell" data-screen="today">
+    <header class="topbar">
+      <div class="brand" aria-label="MyDiaper">
+        <div class="brand-mark">🐘</div>
+        <div>
+          <strong>MyDiaper</strong>
+          <span>Kleine Schritte. Große Abenteuer.</span>
+        </div>
+      </div>
+      <button class="icon-btn" id="notificationsButton" aria-label="Benachrichtigungen">🔔<span class="notification-dot" id="notificationDot"></span></button>
+    </header>
+
+    <main id="app" class="app-main" tabindex="-1"></main>
+
+    <nav class="bottom-nav" aria-label="Hauptnavigation">
+      <button data-route="today" class="nav-item active"><span>⌂</span><small>Heute</small></button>
+      <button data-route="diapers" class="nav-item"><span>◒</span><small>Windeln</small></button>
+      <button data-route="offers" class="nav-item"><span>🏷</span><small>Angebote</small></button>
+      <button data-route="market" class="nav-item"><span>↔</span><small>Börse</small></button>
+      <button data-route="profile" class="nav-item"><span>☺</span><small>Profil</small></button>
+    </nav>
+  </div>
+
+  <div id="modalRoot" class="modal-root" aria-live="polite"></div>
+  <div id="toastRoot" class="toast-root" aria-live="polite"></div>
+
+  <script src="js/data.js" defer></script>
+  <script src="js/domain/pricing.js" defer></script>
+  <script src="js/domain/sizes.js" defer></script>
+  <script src="js/domain/fit-check.js" defer></script>
+  <script src="js/domain/inventory.js" defer></script>
+  <script src="js/domain/model.js" defer></script>
+  <script src="js/storage/defaults.js" defer></script>
+  <script src="js/storage/local-state.js" defer></script>
+  <script src="js/repositories/family-repository.js" defer></script>
+  <script src="js/store.js" defer></script>
+  <script src="js/ui/family-context.js" defer></script>
+  <script src="js/ui/visuals.js" defer></script>
+  <script src="js/ui/offer-visuals.js" defer></script>
+  <script src="js/features/today.js" defer></script>
+  <script src="js/features/diapers.js" defer></script>
+  <script src="js/features/offers.js" defer></script>
+  <script src="js/features/market.js" defer></script>
+  <script src="js/features/profile.js" defer></script>
+  <script src="js/features/finder.js" defer></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>
