@@ -19,18 +19,30 @@ Das ist für den Prototyp bewusst einfach und direkt startbar.
 ```text
 index.html (klassische Skripte)
   js/data.js                        Demo-Katalog
+  js/catalog/
+    demo-products.js                strukturierte, klar markierte Produkt-Testdaten
   js/domain/
+    catalog.js                      Katalogvalidierung und Produktvergleich
+    offers.js                       Angebotsnormalisierung, Aktualität, Alarmvergleich
     pricing.js                      Stückpreis, Preisvergleich
     sizes.js                        Gewichts-Richtwert
     fit-check.js                    Fit-Regeln, Ergebniscodes
+    personalization.js             validierte Erfahrungen, erklärbare Signale
     inventory.js                    Bestand, FIFO, Reichweite
-    model.js                        Schema v2, Migration, Referenzprüfung
+    model.js                        Schema v3, Migration, Referenzprüfung
+    backup.js                       versioniertes Familien-Backupformat
   js/storage/
     defaults.js                     ursprüngliche Demo als Migrationseingang
     local-state.js                  localStorage-Adapter, Transaktionen
+    offer-imports.js                separater, geschützter Importspeicher
   js/repositories/
     family-repository.js            kinder-/setgebundene Operationen
+    offer-repository.js             kindgebundene lokale Preisalarme
+    offer-import-repository.js      geprüfte Angebotsquellen verwalten
+  js/services/
+    offer-provider.js               austauschbarer Angebotsprovider-Vertrag
   js/store.js                       Zusammensetzen von Store und Repository
+  js/platform/browser-files.js      lokaler Dateiimport/-download im Web
   js/ui/family-context.js            Set-Auswahl, UI-Projektion
   js/ui/visuals.js                   Symbole, Referenzgrafiken
   js/ui/offer-visuals.js              Angebotsdarstellung, Referenz-Demos
@@ -43,9 +55,9 @@ docs/                               Spezifikation und Entscheidungen
 www/                                generierter Web-/Capacitor-Build
 ```
 
-Datenfluss: Formular mit festen Kind-/Set-IDs → Repository → Domain-Regeln → validierte Speichertransaktion → UI-Projektion → bestehendes Template. Accountbezogene Demo-Einstellungen, Börse und Chat verwenden weiterhin die lokale Store-Schnittstelle. Der spätere Zielbaum unten ist weiterhin eine Roadmap, nicht bereits implementierte Infrastruktur.
+Datenfluss Familie: Formular mit festen Kind-/Set-IDs → Repository → Domain-Regeln → validierte Speichertransaktion → UI-Projektion → bestehendes Template. Datenfluss Angebote: Demo-Provider plus separat persistierte Import-Provider → Normalisierung gegen den Produktkatalog → Suche/Sortierung/Aktualitätsstatus → Angebots-UI; Preisalarme laufen getrennt über das lokale OfferRepository. Datenportabilität: Familienzustand → versionierter Backup-Umschlag → Browser-Dateiadapter; beim Einlesen führt derselbe Modellvalidator vor dem atomaren Ersetzen sämtliche Besitz- und Referenzprüfungen aus. Accountbezogene Demo-Einstellungen, Börse und Chat verwenden weiterhin die lokale Store-Schnittstelle. Der spätere Zielbaum unten ist weiterhin eine Roadmap, nicht bereits vollständig implementierte Infrastruktur.
 
-Der Finder hält nur flüchtige UI-Entwürfe pro Kind und ruft die bestehenden Größen-/Fit-Domain-Module auf; er schreibt keine Profilwerte implizit zurück. Visuelle Helfer und Templates dürfen die Eigentümerschaftsprüfung im Repository nicht umgehen. Die Referenz-Angebote sind deutlich markierte Demo-Datensätze, kein externer Anbieter. Details und Grenzen des Gestaltungsschritts: ADR-017 bis ADR-019 und `ASSETS.md`.
+Der Finder hält nur flüchtige UI-Entwürfe pro Kind und ruft Größen-, Fit-, Personalisierungs- und Katalog-Domain-Module auf; er schreibt keine Profilwerte implizit zurück. Der Erfahrungseditor schreibt über das Familien-Repository mit festen Kind-/Set-IDs. Produkt- und Größenwechsel erhalten einen setbezogenen Verlauf. Visuelle Helfer und Templates dürfen die Eigentümerschaftsprüfung im Repository nicht umgehen. Der aktive Provider liefert deutlich markierte Demo-Datensätze, keinen externen Live-Feed. Details und Grenzen: ADR-017 bis ADR-025 und `ASSETS.md`.
 
 ## 2. Architekturprinzip
 Nicht neu schreiben, nur weil eine modernere Technik verfügbar ist. Schrittweise refaktorieren, sobald ein Feature echten Bedarf erzeugt.
@@ -186,6 +198,8 @@ Synchronisation:
 - Konflikte bei simplen Einstellungen: latest-write-wins
 - bei Inventar: operation-based oder serverseitige Transaktionen bevorzugen
 
+Die lokale Testversion besitzt seit 12.09.2026 ein versioniertes Familien-Backupformat. Es ist kein Sync-Protokoll, liefert aber einen geprüften Import-/Export-Rand und verhindert, dass eine spätere Cloud-Implementierung UI-Daten ungeprüft direkt in den Store schreibt. Angebotsimports bleiben davon getrennt, weil Feed-Daten einen anderen Lebenszyklus als private Familiendaten haben.
+
 ## 8. Plattform-Abstraktion
 Interfaces:
 - `LocationService`
@@ -216,6 +230,14 @@ Mehrere Provider möglich:
 - RetailerApiProvider
 
 Normalisierung in ein internes `Offer`-Modell.
+
+### Lokal umgesetzt (12.09.2026)
+
+`js/services/offer-provider.js` stellt den synchronen Provider-Vertrag für die direkt startbare Testversion bereit. Der aktive statische Provider liefert ausschließlich gekennzeichnete Demo-Daten. `js/domain/offers.js` normalisiert Produkt-/Packungsreferenzen, Quelle, Bereich, Preise, Versand, Prüf- und Gültigkeitsdaten. Ein späterer Partnerfeed ersetzt oder ergänzt den Provider, ohne die Feature-Templates an seine Rohstruktur zu koppeln.
+
+Die Aktualitätsanzeige ist bereits implementiert. Sie zeigt fehlende Prüfzeitpunkte ehrlich als unverifiziert bzw. Demo an und kann kontrollierte Importdaten als frisch, älter, veraltet oder abgelaufen kennzeichnen. Lokale Preisalarme vergleichen exakt dieselbe `productSizeId` und den ungerundeten Stückpreis. Echte Push-Benachrichtigungen bleiben eine spätere Service-/Plattformaufgabe.
+
+Eigene kontrollierte JSON-Quellen können inzwischen über UI oder Repository eingelesen werden. Domain-Regeln begrenzen Größe und Datensatzanzahl, erzwingen eindeutige Quell-/Angebots-IDs, bekannte Katalogpackungen, EUR und HTTPS für optionale Links. Ein separater localStorage-Adapter schützt beschädigte Importdaten und hält sie aus dem Familienzustand heraus. `createOfferService` fragt zusätzliche Provider dynamisch ab; ein Import ist dadurch sofort such- und preisvergleichbar, ohne das Feature-Template neu zu initialisieren.
 
 ## 10. Empfehlungssystem
 Keine KI als Voraussetzung.

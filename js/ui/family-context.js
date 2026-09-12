@@ -14,6 +14,10 @@
       activeSets:() => repository.listSets(activeChild().id),
       selectSet:setId => { const childId = store.get().activeChildId; repository.viewChild(childId, setId); selected.set(childId, setId); },
       latestFit:() => { const child = activeChild(); return repository.listFitChecks(child.id, child.setId).at(-1); },
+      fitChecksFor:setId => { const child=activeChild(); return repository.listFitChecks(child.id,setId); },
+      experiencesFor:setId => { const child=activeChild(); return repository.listExperiences(child.id,setId); },
+      sizeHistoryFor:setId => { const child=activeChild(); return repository.listSizeHistory(child.id,setId); },
+      productDetails:productSizeId => productSizeId ? app.domain.catalog.details(app.productCatalog,productSizeId) : null,
       daysText:child => child.days === null ? '–' : child.days,
       clearSelection:() => selected.clear()
     };

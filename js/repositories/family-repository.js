@@ -1,7 +1,7 @@
 (function(root){
   'use strict';
   const app = root.MyDiaper = root.MyDiaper || {};
-  const {model, inventory, sizes, fitCheck} = app.domain;
+  const {model, inventory, sizes, fitCheck, personalization} = app.domain;
   function createFamilyRepository(store, guide){
     function childIn(state, childId){
       const child = state.children.find(c => c.id === childId);
@@ -34,10 +34,22 @@
       if(quantity > current) addLot(state, childId, setId, quantity - current, 'correction');
       else inventory.consume(state.inventoryLots, childId, setId, current - quantity);
     }
+    function catalogMatch(input){
+      return app.domain.catalog.findProductSize(app.productCatalog,{brand:input.brand,line:input.line,size:input.size});
+    }
+    function setSnapshot(set){return set?{size:set.size,productSizeId:set.productSizeId??null,brand:set.brand||'',line:set.line||''}:null;}
+    function recordSize(state,set,before,reason){
+      const after=setSnapshot(set);
+      if(before&&before.size===after.size&&before.productSizeId===after.productSizeId&&before.brand===after.brand&&before.line===after.line)return;
+      state.sizeHistory.push({id:model.id('size'),childId:set.childId,setId:set.id,fromSize:before?.size??null,toSize:after.size,
+        fromProductSizeId:before?.productSizeId??null,toProductSizeId:after.productSizeId,productSizeId:after.productSizeId,
+        fromProduct:before?{brand:before.brand,line:before.line}:null,toProduct:{brand:after.brand,line:after.line},reason,createdAt:new Date().toISOString()});
+    }
     function makeSet(childId, input, primary = false){
+      const match=input.productSizeId?app.domain.catalog.details(app.productCatalog,input.productSizeId)?.size:catalogMatch(input);
       return {id:model.id('set'), childId, label:input.label, purpose:model.purpose(input.label),
         brand:input.brand || '', line:input.line || '', size:String(input.size || '3'),
-        dailyUse:input.dailyUse ?? 0, productSizeId:input.productSizeId ?? null, isPrimary:primary, active:true};
+        dailyUse:input.dailyUse ?? 0, productSizeId:match?.id??null, isPrimary:primary, active:true};
     }
     function viewChild(childId, setId){
       const state = store.get();
@@ -66,14 +78,18 @@
         }
         wanted.forEach(label => {
           if(!state.diaperSets.some(s => s.childId === childId && s.label === label && s.active)){
-            state.diaperSets.push(makeSet(childId, {label, brand:input.brand, line:input.line ?? (former ? former.line : 'Premium'), size:input.size}));
+            const added=makeSet(childId,{label,brand:input.brand,line:input.line??(former?former.line:'Premium'),size:input.size});
+            state.diaperSets.push(added); recordSize(state,added,null,'created');
           }
         });
         // A removed category retains its inventory and history under its original ID.
         const primary = former && former.active ? former : state.diaperSets.find(s => s.childId === childId && s.active);
         state.diaperSets.filter(s => s.childId === childId).forEach(s => s.isPrimary = s.id === primary.id);
         if(creating || primary === former){
+          const before=creating?null:setSnapshot(primary);
           Object.assign(primary, {brand:input.brand, line:input.line ?? primary.line, size:String(input.size), dailyUse:input.dailyUse});
+          const match=catalogMatch(primary); primary.productSizeId=match?match.id:null;
+          if(!creating)recordSize(state,primary,before,'profile');
           correctStock(state, childId, primary.id, input.stock);
         }
         if(creating) state.activeChildId = childId;
@@ -82,15 +98,28 @@
     }
     function createSet(childId, input){
       const set = makeSet(childId, input);
-      store.patch(state => { childIn(state, childId); state.diaperSets.push(set); addLot(state, childId, set.id, input.stock ?? 0, 'manual'); });
+      store.patch(state => { childIn(state, childId); state.diaperSets.push(set); recordSize(state,set,null,'created'); addLot(state, childId, set.id, input.stock ?? 0, 'manual'); });
       return set.id;
     }
     function updateSet(childId, setId, input){
       store.patch(state => {
         const set = setIn(state, childId, setId);
+        const before=setSnapshot(set);
         // Identity and ownership are intentionally not copied from input.
         for(const key of ['brand','line','size','dailyUse']) if(input[key] !== undefined) set[key] = input[key];
+        if(input.brand!==undefined||input.line!==undefined||input.size!==undefined){const match=catalogMatch(set);set.productSizeId=match?match.id:null;}
+        recordSize(state,set,before,'manual');
         if(input.stock !== undefined) correctStock(state, childId, setId, input.stock);
+      });
+    }
+    function assignProduct(childId,setId,productSizeId){
+      store.patch(state=>{
+        const set=setIn(state,childId,setId),found=app.domain.catalog.details(app.productCatalog,productSizeId);
+        if(!found)throw new Error('Produktgröße nicht im Katalog gefunden.');
+        if(!app.domain.catalog.compatible(found.product,set.purpose))throw new Error('Dieses Produkt passt nicht zur Art des Windelsets.');
+        const before=setSnapshot(set);
+        Object.assign(set,{brand:found.brand.name,line:found.product.name,size:found.size.label,productSizeId:found.size.id});
+        recordSize(state,set,before,'catalog');
       });
     }
     function addStock(childId, setId, quantity){ store.patch(state => addLot(state, childId, setId, quantity, 'manual')); }
@@ -123,6 +152,7 @@
     }
     function saveExperience(childId, setId, input){
       const experienceId = input.id || model.id('experience');
+      const normalized=personalization.normalizeExperience(input);
       store.patch(state => {
         const set = setIn(state, childId, setId);
         let experience;
@@ -134,19 +164,22 @@
             productSnapshot:{brand:set.brand, line:set.line, size:set.size}, createdAt:new Date().toISOString()};
           state.productExperiences.push(experience);
         }
-        for(const key of ['fitRating','leakRating','nightRating','skinComfortRating','sizeTendency','avoidRecommendation','notes']){
-          if(input[key] !== undefined) experience[key] = model.clone(input[key]);
-        }
+        Object.assign(experience,model.clone(normalized));
         experience.updatedAt = new Date().toISOString();
       });
       return experienceId;
     }
-    function listExperiences(childId){
+    function listExperiences(childId,setId){
       const state = store.get(); childIn(state, childId);
-      return state.productExperiences.filter(e => e.childId === childId);
+      if(setId)setIn(state,childId,setId,false);
+      return state.productExperiences.filter(e => e.childId === childId&&(!setId||e.setId===setId));
     }
-    return {viewChild, listSets, saveChildProfile, createSet, updateSet, addStock, consumeStock,
-      saveFitCheck, listFitChecks, saveExperience, listExperiences,
+    function listSizeHistory(childId,setId){
+      const state=store.get();childIn(state,childId);if(setId)setIn(state,childId,setId,false);
+      return state.sizeHistory.filter(entry=>entry.childId===childId&&(!setId||entry.setId===setId));
+    }
+    return {viewChild, listSets, saveChildProfile, createSet, updateSet, assignProduct, addStock, consumeStock,
+      saveFitCheck, listFitChecks, saveExperience, listExperiences, listSizeHistory,
       switchChild:childId => store.patch(state => { childIn(state, childId); state.activeChildId = childId; })};
   }
   app.repositories = {createFamilyRepository};

@@ -79,3 +79,73 @@ test('Alle lokalen Designressourcen existieren und sind im Offline-Cache',()=>{
   for(const match of sw.matchAll(/'\.\/([^']+)'/g)) assert.ok(fs.existsSync(path.join(root,match[1])),match[1]);
   for(const asset of ['css/reference.css','assets/fonts/nunito-regular.ttf','assets/fonts/nunito-semibold.ttf','assets/fonts/nunito-bold.ttf','assets/fonts/caveat-medium.ttf','assets/images/design-reference.png','assets/images/sleeping-baby.png','assets/images/elephant.png']) assert.ok(sw.includes(`'./${asset}'`),asset);
 });
+
+test('Erfahrungseditor speichert Bewertungen eindeutig für Kind und Set',()=>{
+  const t=loadApp(),repo=t.app.repository,child=repo.viewChild('emma');
+  t.click('route',{route:'diapers'});t.click('experience-add');
+  assert.match(t.elements.get('modalRoot').innerHTML,/Erfahrung gilt nur für dieses Kind|gilt nur für dieses Kind/);
+  t.submit('experienceForm',{fitRating:'5',leakRating:'4',nightRating:'3',skinComfortRating:'5',sizeTendency:'normal',avoidRecommendation:null,notes:'Sehr weich.'},{childId:child.id,setId:child.setId,id:''});
+  const saved=repo.listExperiences('emma')[0];
+  assert.equal(saved.fitRating,5);
+  assert.equal(saved.notes,'Sehr weich.');
+  assert.equal(repo.listExperiences('leo').length,0);
+  assert.match(t.elements.get('app').innerHTML,/4,3/);
+});
+
+test('Offener Erfahrungsdialog behält sein ursprüngliches Kind und Set',()=>{
+  const t=loadApp(),repo=t.app.repository,emma=repo.viewChild('emma');
+  t.click('route',{route:'diapers'});t.click('experience-add');t.click('switch-child',{id:'leo'});
+  t.submit('experienceForm',{fitRating:'2',leakRating:'2',nightRating:'1',skinComfortRating:'3',sizeTendency:'small',avoidRecommendation:'on',notes:'Für Emma.'},{childId:emma.id,setId:emma.setId,id:''});
+  assert.equal(repo.listExperiences('emma').length,1);
+  assert.equal(repo.listExperiences('emma')[0].avoidRecommendation,true);
+  assert.equal(repo.listExperiences('leo').length,0);
+});
+
+test('Finder zeigt gespeicherte Erfahrung und ausgewählte Wünsche im Ergebnis',()=>{
+  const t=loadApp(),repo=t.app.repository,emma=repo.viewChild('emma');
+  repo.saveExperience('emma',emma.setId,{fitRating:5,leakRating:5,nightRating:4,skinComfortRating:5,sizeTendency:'normal',avoidRecommendation:false,notes:'Bewährt.'});
+  t.click('route',{route:'finder'});t.click('finder-choice',{field:'priority',value:'fit'});t.click('finder-next');t.click('finder-next');t.click('finder-next');
+  const html=t.elements.get('app').innerHTML;
+  assert.match(html,/Mit persönlicher Erfahrung/);
+  assert.match(html,/Bisher gute persönliche Erfahrung/);
+  assert.match(html,/Hautverträglichkeit/);
+  assert.match(html,/druckfreien Sitz/);
+});
+
+test('Windeln, Börse und Profil nutzen die neue Referenzgestaltung ohne Funktionsverlust',()=>{
+  const t=loadApp();
+  for(const [route,expected] of [['diapers','Produkterfahrung'],['market','Windeln finden'],['profile','Alles Persönliche']]){
+    t.click('route',{route});const html=t.elements.get('app').innerHTML;
+    assert.match(html,new RegExp(expected));assert.doesNotMatch(html,/NaN|undefined/);
+  }
+  t.click('route',{route:'market'});t.click('market-tab',{mode:'Verschenken'});
+  assert.match(t.elements.get('app').innerHTML,/Lupilu Pants/);
+  assert.doesNotMatch(t.elements.get('app').innerHTML,/Pampers Premium Protection Größe 3/);
+});
+
+test('Produktkatalog ist im Windelbereich bedienbar und schreibt Größenhistorie',()=>{
+  const t=loadApp(),repo=t.app.repository,emma=repo.viewChild('emma'),before=repo.listSizeHistory('emma',emma.setId).length;
+  t.click('route',{route:'diapers'});
+  assert.match(t.elements.get('app').innerHTML,/Interner Testkatalog/);
+  assert.match(t.elements.get('app').innerHTML,/Produkte für Größe 3/);
+  t.click('catalog-assign',{id:'size-pampers-baby-dry-4'});
+  const changed=repo.viewChild('emma');
+  assert.equal(changed.currentLine,'Baby-Dry');
+  assert.equal(changed.currentSize,'4');
+  assert.equal(repo.listSizeHistory('emma',emma.setId).length,before+1);
+  assert.match(t.elements.get('app').innerHTML,/Produkte für Größe 4/);
+});
+
+test('Preisalarm-Dialog speichert eine kindbezogene Produkt- und Bereichsgrenze',()=>{
+  const t=loadApp();t.click('route',{route:'offers'});t.click('price-alert',{id:'reference-dm'});
+  const modal=t.elements.get('modalRoot').innerHTML;
+  assert.match(modal,/Preisalarm anlegen/);
+  assert.match(modal,/data-child-id="emma"/);
+  assert.match(modal,/data-product-size-id="size-pampers-baby-dry-4"/);
+  t.submit('priceAlertForm',{maxUnitPrice:'0.25',scope:'local'},{childId:'emma',productSizeId:'size-pampers-baby-dry-4',id:''});
+  assert.equal(t.app.offerRepository.listAlerts('emma').length,1);
+  assert.equal(t.app.offerRepository.listAlerts('leo').length,0);
+  assert.match(t.elements.get('app').innerHTML,/Preisalarm erreicht/);
+  t.click('manage-alerts');
+  assert.match(t.elements.get('modalRoot').innerHTML,/bis 0,25 € pro Windel/);
+});

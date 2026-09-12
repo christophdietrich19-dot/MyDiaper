@@ -2,9 +2,9 @@
 
 Die folgenden Modelle sind Zielmodelle. Feldnamen können technisch angepasst werden, Beziehungen und Verantwortlichkeiten sollten erhalten bleiben.
 
-## Implementiertes lokales Schema v2
+## Implementiertes lokales Schema v3
 
-Speicherschlüssel: `mydiaper-v2-state`. Alle IDs sind stabile Strings; neue IDs werden clientseitig erzeugt. Die folgenden Sammlungen sind bereits umgesetzt; die relationalen Zielmodelle weiter unten bleiben die Planung für Backend und Produktkatalog.
+Speicherschlüssel: `mydiaper-v3-state`. Alle IDs sind stabile Strings; neue IDs werden clientseitig erzeugt. `mydiaper-v1-state` und `mydiaper-v2-state` werden einmalig migriert und bleiben unverändert als Sicherung erhalten. Die folgenden Sammlungen sind bereits lokal umgesetzt; die relationalen Zielmodelle weiter unten bleiben die Planung für das spätere Backend.
 
 | Sammlung | Identität / Beziehung | Weitere wesentliche Felder |
 |---|---|---|
@@ -14,8 +14,10 @@ Speicherschlüssel: `mydiaper-v2-state`. Alle IDs sind stabile Strings; neue IDs
 | `usageEvents` | `id`, `childId`, `setId` | `quantity`, `source`, `usedAt` |
 | `fitChecks` | `id`, `childId`, `setId` | `answers`, `code`, `result`, `note`, `score`, `recommendation`, `weightKgSnapshot`, `productSnapshot`, `createdAt` |
 | `productExperiences` | `id`, `childId`, `setId` | `productSizeId`, `productSnapshot`, optionale Bewertungen, `sizeTendency`, `avoidRecommendation`, `notes`, Zeitstempel |
+| `sizeHistory` | `id`, `childId`, `setId` | vorherige/neue Größe und Produktgröße, Produktsnapshots, `reason`, `createdAt` |
+| `priceAlerts` | `id`, `childId`, optional `setId` | `productSizeId`, `maxUnitPrice`, `scope`, `enabled`, Zeitstempel |
 
-`schemaVersion: 2` kennzeichnet den Zustand. `activeChildId` bleibt erhalten. `settings`, `market` und `chats` bleiben bewusst auf Familien-/Demo-Ebene. Es gibt weiterhin keinen Accountzwang, Cloud-Sync oder echten Produktdatenanbieter.
+`schemaVersion: 3` kennzeichnet den Zustand. `activeChildId` bleibt erhalten. `settings`, `market` und `chats` bleiben bewusst auf Familien-/Demo-Ebene. Es gibt weiterhin keinen Accountzwang, Cloud-Sync oder echten Produktdatenanbieter.
 
 Bestände liegen ausschließlich in `inventoryLots`. Die UI-Felder `stock`, `days`, `currentSize` usw. werden abgeleitet und nicht zusätzlich in Kinderprofilen gespeichert. Jeder Bestand benötigt sowohl Kind als auch Set; die Set-Zugehörigkeit wird vor dem Speichern geprüft. Fit-Checks und Erfahrungen können im Modell auch ohne Set-Referenz existieren, bleiben aber immer einem Kind zugeordnet; die aktuellen Repository-Schreibmethoden arbeiten mit einem konkreten Set.
 
@@ -37,11 +39,67 @@ repository.saveFitCheck(childId, setId, {
 repository.saveExperience(childId, setId, {
   sizeTendency: 'normal', avoidRecommendation: false, notes: 'Persönliche Erfahrung'
 });
+repository.assignProduct(childId, setId, 'size-pampers-baby-dry-4');
 repository.listFitChecks(childId, setId);
 repository.listExperiences(childId);
+repository.listSizeHistory(childId, setId);
+
+const offerRepository = MyDiaper.offerRepository;
+offerRepository.saveAlert(childId, {
+  productSizeId: 'size-pampers-baby-dry-4',
+  maxUnitPrice: 0.25,
+  scope: 'local',
+  enabled: true
+});
+offerRepository.listAlerts(childId);
 ```
 
 Die Methoden prüfen Beziehungen unabhängig vom aktiven UI-Kind. Alle Leseergebnisse sind Kopien. Beim Bearbeiten einer Erfahrung müssen Kind, Set und Erfahrungs-ID zusammenpassen. Migration und deaktivierte Sets sind in ADR-012 dokumentiert.
+
+Seit 12.09.2026 ist die Erfahrungs-API über **Windeln → Produkterfahrung** bedienbar. `fitRating`, `leakRating`, `nightRating` und `skinComfortRating` sind, wenn vorhanden, ganze Zahlen von 1 bis 5. `sizeTendency` akzeptiert nur `small`, `normal` oder `large`, `avoidRecommendation` nur einen Boolean; Notizen werden getrimmt und auf 600 Zeichen begrenzt. Das Formular trägt feste `childId` und `setId`, sodass ein späterer UI-Kinderwechsel das Speicherziel nicht verändern kann.
+
+`js/domain/personalization.js` erzeugt aus Gewichts-Richtwert, Fit-Ergebnis, Alterskontext, ausgewählten Prioritäten und den Erfahrungen des ausgewählten Sets eine erklärbare Darstellung. Es verändert weder Profil noch gespeicherte Größe. Konkrete Vergleichskandidaten kommen ausschließlich aus dem getrennten Katalogmodul. Erfahrungen anderer Kinder oder Sets werden aus dem persönlichen Signal herausgefiltert.
+
+## Implementierter lokaler Produktkatalog
+
+`js/catalog/demo-products.js` enthält getrennte Sammlungen für `brands`, `products`, `sizes` und `packages`. Alle Datensätze sind als interner Testkatalog gekennzeichnet. Größen besitzen stabile IDs und allgemeine Test-Gewichtsbereiche; diese sind keine Herstellerzusagen. Beim Verknüpfen einer Kataloggröße mit einem Windelset werden Marke, Linie, Größe und `productSizeId` gemeinsam gesetzt. Freie persönliche Produkte bleiben mit `productSizeId: null` zulässig.
+
+`js/domain/catalog.js` validiert Referenzen, löst Produktdetails auf und erzeugt deterministische Vergleichskandidaten nach Größe, Set-Zweck, gewählten Prioritäten und persönlichen Erfahrungen. Ausgeschlossene persönliche Erfahrungen werden nicht als Kandidat angeboten.
+
+## Implementierte Angebotsgrenze
+
+`js/domain/offers.js` normalisiert Angebote aus einem `OfferProvider`. Jedes Angebot benötigt `providerKey`, `sourceType` (`demo` oder kontrollierter `import`) sowie `scope` (`local` oder `online`). Produktpackung und Produktgröße werden gegen den Katalog geprüft. `verifiedAt` und Gültigkeitszeiträume bleiben nullable; fehlende Daten werden nicht erfunden. Die Aktualität wird als Demo, unverifiziert, frisch, älter, veraltet oder abgelaufen ausgewiesen.
+
+Preisalarme gehören in der lokalen Testversion immer zu einem Kind und einer exakten Katalog-Produktgröße. `scope` unterscheidet `local`, `online` und `both`. Der Vergleich verwendet den ungerundeten Preis pro Windel; die UI-Rundung entscheidet nicht über einen Treffer. Ohne echten Feed und Push-Service bleiben die Alarme lokal und lösen keine Systembenachrichtigung aus.
+
+## Separater Angebotsimport-Speicher
+
+Speicherschlüssel: `mydiaper-offer-imports-v1`. Diese Daten gehören bewusst nicht zum Familien-Schema v3:
+
+```text
+schemaVersion: 1
+imports[]
+  providerKey       # technisch mit import- präfixiert
+  label
+  sourceType        # immer import
+  importedAt
+  offers[]          # bereits normalisierte, kataloggebundene Angebote
+```
+
+Ein erneuter Import mit derselben `providerKey` ersetzt diese Quelle atomar. Provider untereinander sowie Demo-Angebote bleiben getrennt. Beschädigte gespeicherte Importdaten werden nicht überschrieben und blockieren den Familien-Store nicht. Details des externen Austauschformats: `OFFER_IMPORT.md`.
+
+## Familien-Backup-Umschlag
+
+Das portable lokale Backup verwendet kein neues Familienschema, sondern kapselt den vollständigen validierten v3-Zustand:
+
+```text
+format: mydiaper-family-backup
+version: 1
+exportedAt: ISO-8601
+state: <vollständiger schemaVersion-3-Familienzustand>
+```
+
+Beim Einlesen sind exakt dieses Format und Version 1 erforderlich. Anschließend prüft `model.assertState` alle IDs, Kinder-/Set-Zuordnungen, Katalogreferenzen und fachlichen Werte, bevor `store.replace` atomar persistiert. Angebotsimporte sind nicht enthalten. Der Umschlag ist eine lokale Portabilitätsgrenze, kein Cloud-Sync und keine Authentifizierung.
 
 ## users
 ```text

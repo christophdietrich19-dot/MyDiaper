@@ -1,15 +1,15 @@
-window.MyDiaper = window.MyDiaper || {}; MyDiaper.features = MyDiaper.features || {};
+window.MyDiaper=window.MyDiaper||{};MyDiaper.features=MyDiaper.features||{};
 
-MyDiaper.features.market = function(ctx){
-  const items = MyDiaper.store.get().market;
-  const filter = ctx.ui.marketFilter || 'Alle';
-  const visible = filter==='Alle' ? items : items.filter(x=>x.mode===filter);
-  return `
-    <div class="eyebrow">Windelbörse</div><h1>Verkaufen, tauschen, verschenken</h1><p class="muted">Praktisch statt Social Network. Zustand immer klar kennzeichnen.</p>
-    <section class="section"><div class="tabs">${['Alle','Verkaufen','Tauschen','Verschenken'].map(x=>`<button class="tab ${filter===x?'active':''}" data-action="market-tab" data-mode="${x}">${x}</button>`).join('')}</div></section>
-    <section class="section"><button class="btn primary block" data-action="new-listing">+ Anzeige aufgeben</button></section>
-    <section class="section stack">
-      ${visible.map(m=>`<article class="card market-listing"><div class="product-thumb">📦</div><div><div class="flex-between"><span class="badge ${m.mode==='Verschenken'?'success':m.mode==='Tauschen'?'blue':''}">${ctx.esc(m.mode)}</span><span class="muted">${ctx.esc(m.created)}</span></div><h3 style="margin:9px 0 4px">${ctx.esc(m.title)}</h3><div class="muted">${ctx.esc(m.condition)} · ${m.count} Stück</div><div class="meta"><span class="badge">📍 ${ctx.esc(m.distance)}</span><span class="badge">${ctx.esc(m.price)}</span><span class="badge">von ${ctx.esc(m.owner)}</span></div><button class="btn secondary sm" style="margin-top:10px" data-action="open-chat" data-id="${m.id}">Chat öffnen</button></div></article>`).join('') || '<div class="card empty">Keine Anzeigen in diesem Bereich.</div>'}
-    </section>
-  `;
+MyDiaper.features.market=function(ctx){
+  const items=MyDiaper.store.get().market,filter=ctx.ui.marketFilter||'Alle';
+  const visible=filter==='Alle'?items:items.filter(item=>item.mode===filter);
+  const iconFor=mode=>mode==='Verschenken'?'heart':mode==='Tauschen'?'swap':'tag';
+  const conditionText=item=>/\bStück\b/i.test(item.condition)?item.condition:`${item.condition} · ${item.count} Stück`;
+  return `<div class="market-screen">${ctx.screenHeader('Windel-Börse')}
+    <section class="market-hero"><div><p class="eyebrow">Weitergeben statt wegwerfen</p><h1>Windeln finden<br>ein neues Zuhause.</h1><p>Verkaufen, tauschen, verschenken – übersichtlich und familiennah.</p></div><span class="market-hero-art">${ctx.icon('swap')}</span></section>
+    <div class="market-filter" aria-label="Anzeigen filtern">${['Alle','Verkaufen','Tauschen','Verschenken'].map(mode=>`<button class="${filter===mode?'selected':''}" data-action="market-tab" data-mode="${mode}" aria-pressed="${filter===mode}">${mode}</button>`).join('')}</div>
+    <button class="btn primary block create-listing" data-action="new-listing">${ctx.icon('plus')} Anzeige aufgeben</button>
+    <section class="market-results"><div class="section-heading"><h2>${filter==='Alle'?'Anzeigen in deiner Nähe':filter}</h2><span>${visible.length} Treffer</span></div>
+      ${visible.map(item=>`<article class="market-card" data-listing-id="${ctx.esc(item.id)}"><div class="listing-icon ${item.mode.toLowerCase()}">${ctx.icon(iconFor(item.mode))}</div><div class="listing-body"><div class="listing-top"><span class="listing-mode">${ctx.esc(item.mode)}</span><small>${ctx.esc(item.created)}</small></div><h3>${ctx.esc(item.title)}</h3><p>${ctx.esc(conditionText(item))}</p><div class="listing-meta"><span>${ctx.icon('pin')} ${ctx.esc(item.distance)}</span><strong>${ctx.esc(item.price)}</strong></div><div class="listing-owner"><span class="mini-avatar">${ctx.esc(item.owner.slice(0,1))}</span><span>von ${ctx.esc(item.owner)}</span><button class="text-btn" data-action="open-chat" data-id="${ctx.esc(item.id)}">Chat öffnen ${ctx.icon('arrow')}</button></div></div></article>`).join('')||`<div class="friendly-empty">${ctx.art('elephant')}<h2>Hier ist es noch ganz ruhig.</h2><p>In diesem Bereich gibt es momentan keine Demo-Anzeigen.</p></div>`}
+    </section><p class="market-notice">Demo-Börse · Noch keine öffentlichen Nutzerkonten oder Zahlungen.</p></div>`;
 };

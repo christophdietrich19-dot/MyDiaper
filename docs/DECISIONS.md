@@ -119,3 +119,67 @@ Status: umgesetzt, 11.09.2026
 Die Startseite verwendet tatsächliche lokale Verbrauchs-/Vorratswerte. Die Vorlage begründet weder erfasste Trockenphasen noch Gesundheitszustände; diese Aussagen werden nicht erfunden. Der manuelle Standort bleibt unverändert. Die Berliner Karte ist ausdrücklich eine statische Beispielkarte, keine Standortermittlung oder echte Umgebungssuche.
 
 Zwei Referenz-Demo-Angebote reproduzieren die Beispielpreise/Produkte der Vorlage. Die Gesamtliste enthält zusätzlich sämtliche bisherigen lokalen Demo-Angebote; Online-Angebote bleiben getrennt. Stückpreise und Sortierung verwenden das Pricing-Domain-Modul. Favoriten sind accountbezogene Einstellungen (`settings.favoriteOfferIds`), keine Kinddaten; das schemaerweiterbare Settings-Objekt benötigt dafür keine v3-Migration. Echte Händlerfeeds, Routing und Geocoding sind weiterhin nicht implementiert.
+
+## ADR-020 — Referenzstil für die übrigen Hauptbereiche
+
+Status: umgesetzt, 12.09.2026
+
+Auf ausdrücklichen Folgeauftrag wurden auch **Windeln**, **Börse**, **Profil** und die Dialoge im bestehenden Referenzstil gestaltet. Für diese Ansichten lag keine eigene Bildschirmvorlage vor. Sie verwenden daher die bereits abgeleiteten Farben, Schriften, Radien, Liniensymbole, Illustrationen und Touch-Größen, ohne eine nicht belegbare Pixelidentität zu behaupten. Die fünfteilige Bottom-Navigation sowie sämtliche bisherigen Aktionen bleiben erhalten.
+
+Die Gestaltung bleibt in `css/reference.css`; die Feature-Dateien enthalten semantische Templates statt neue globale Fachlogik. Emoji-Platzhalter der drei Bereiche wurden durch das bestehende SVG-Symbolsystem ersetzt. Der Börsenhinweis stellt weiterhin klar, dass noch keine öffentlichen Konten oder Zahlungen existieren.
+
+## ADR-021 — Persönliche Produkterfahrung ist Kind- und Set-Daten
+
+Status: umgesetzt, 12.09.2026
+
+Der Erfahrungseditor erfasst Passform, Auslaufschutz, Nachtleistung, Hautkomfort, Größenwirkung, Ausschluss und eine kurze Notiz. Das Formular hält `childId`, `setId` und beim Bearbeiten die Erfahrungs-ID fest. Repository und Speichergrenze prüfen weiterhin die Eigentümerschaft. Bewertungen werden im neuen reinen Domain-Modul `personalization.js` validiert; fehlerhafte Eingaben verändern den bestätigten Speicherstand nicht. Es ist keine Schema-v3-Migration nötig, weil `productExperiences` und diese Felder bereits in Schema v2 vorgesehen waren.
+
+Der Verlauf bleibt bewusst setbezogen: Er zeigt nur Fit-Checks und Erfahrungen des aktiven Kindes und ausgewählten Sets. Öffentliche Produktbewertungen oder die Zusammenführung zwischen Familien sind nicht Bestandteil der lokalen Testversion.
+
+## ADR-022 — Erklärbare Personalisierung ohne erfundene Produktempfehlung
+
+Status: umgesetzt, 12.09.2026
+
+Der Finder kombiniert seine flüchtigen Angaben mit den bestehenden Größen- und Fit-Regeln. Die Größe bleibt ein Gewichts-Richtwert. Alter wird als Kontext erläutert, nicht als alleinige Größenregel. Gewählte Prioritäten erzeugen deterministische Prüftipps. Ausschließlich die letzte passende Erfahrung des ausgewählten Kindes und Sets erscheint als persönliches Signal; andere Kinder und Sets werden ausgeschlossen.
+
+Ohne strukturierten Produktkatalog und belastbare Produktattribute wird kein fremdes Produkt als angeblich passend ausgegeben. Positive, neutrale und ausgeschlossene Erfahrungen werden klar getrennt, verändern aber die geprüfte Größenregel nicht. Das Ergebnis nennt seine Gründe und den Richtwert-Hinweis. Finder-Angaben schreiben weiterhin nicht automatisch ins Kinderprofil. Domain-, Repository- und UI-Tests decken Validierung, Isolation und Darstellung ab.
+
+## ADR-023 — Lokales Schema v3 für Verlauf und Preisalarme
+
+Status: umgesetzt, 12.09.2026
+
+Produkt-/Größenverläufe und Preisalarme sind eigenständige Entitäten und werden nicht in Windelsets oder UI-Einstellungen versteckt. Deshalb erhöht sich das lokale Schema auf v3 und der bevorzugte Schlüssel auf `mydiaper-v3-state`. v1- und v2-Stände werden einmalig verlustfrei migriert; ihre bisherigen Speicherschlüssel werden nicht überschrieben. Bekannte Marke-/Linie-/Größe-Kombinationen erhalten eine Katalog-ID, unbekannte persönliche Angaben bleiben mit `productSizeId: null` erhalten.
+
+`sizeHistory` ist immer an Kind und Set gebunden und speichert Vorher-/Nachher-Größe, Katalog-IDs sowie Produktsnapshots. Dadurch bleiben auch Produktwechsel bei gleicher Größe nachvollziehbar. `priceAlerts` sind in der Testversion einem Kind und einer exakten Katalog-Produktgröße zugeordnet. Repository und Speichergrenze prüfen Besitz, Katalogreferenz, Bereich und positive Preisgrenze atomar.
+
+## ADR-024 — Strukturierter Testkatalog statt erfundener Herstellerdaten
+
+Status: umgesetzt, 12.09.2026
+
+Marken, Produkte, Größen und Packungen liegen getrennt in `js/catalog/demo-products.js` und besitzen stabile IDs. Der Datensatz ist ausdrücklich ein interner Testkatalog. Allgemeine Gewichtsbereiche stammen aus der bereits vorhandenen Größenregel und werden nicht als herstellerspezifische Zusage dargestellt. Barcodes bleiben `null`, solange keine geprüfte Quelle vorliegt.
+
+`js/domain/catalog.js` validiert Referenzen und erzeugt Vergleichskandidaten deterministisch nach Größe, Set-Art, ausgewählten Prioritäten und persönlichen Erfahrungen. Ein persönlicher Ausschluss entfernt nur für dieses Kind den entsprechenden Kandidaten. Das aktive Set bleibt bevorzugt sichtbar. Die Übernahme eines Katalogprodukts aktualisiert Marke, Linie, Größe und Katalog-ID gemeinsam; freie manuelle Angaben bleiben weiterhin möglich.
+
+## ADR-025 — OfferProvider-Grenze und ehrliche Aktualität
+
+Status: umgesetzt, 12.09.2026
+
+Angebots-Templates lesen nicht mehr direkt aus Roharrays. Ein OfferProvider liefert Datensätze an `js/domain/offers.js`; dort werden Quelle, lokaler/online Bereich, Katalogreferenzen, Packungsmenge, Preise, Versand sowie optionale Prüf- und Gültigkeitszeiten normalisiert. Der derzeit aktive statische Provider ist klar als Demo gekennzeichnet. Ein zukünftiger legaler Partner-/Affiliate-/Händlerfeed kann als weiterer Provider ergänzt werden, ohne UI oder Preislogik umzuschreiben.
+
+Aktualität ist kein implizites Versprechen: Demo-Daten erscheinen als nicht live geprüft, fehlende Prüfzeitpunkte als unverifiziert und kontrollierte Imports je nach Alter als frisch, älter, veraltet oder abgelaufen. Preisalarme verwenden den ungerundeten Stückpreis und exakt dieselbe `productSizeId`; Rundung ist nur Darstellung. Ohne echten Feed und Push-Service lösen lokale Alarme keine Systembenachrichtigung aus.
+
+## ADR-026 — Kontrollierter Angebotsimport als erster realer Provider-Eingang
+
+Status: umgesetzt, 12.09.2026
+
+Solange kein vertraglich zulässiger Händler-/Affiliatefeed feststeht, ist der erste echte Dateneingang ein bewusst vom Nutzer bereitgestellter JSON-Import. Er wird nicht als automatisch live behauptet. `js/domain/offers.js` validiert Formatversion, Quellschlüssel, eindeutige externe Angebots-IDs, Bereich, Händler, EUR-Preise, optionale HTTPS-Links, Zeiträume und die Referenz auf eine bekannte Katalogpackung. Freie Produkt-/Packungsdaten werden nicht stillschweigend angelegt.
+
+Importierte Quellen liegen separat unter `mydiaper-offer-imports-v1`. Ein erneuter Import ersetzt atomar nur dieselbe Quelle. Beschädigte Importdaten bleiben unverändert, beeinflussen den Familienzustand nicht und können nur über eine ausdrücklich bestätigte Rücksetzfunktion entfernt werden. Der OfferService bezieht ImportProvider dynamisch ein; Suche, Sortierung, Aktualität und Preisalarme verwenden danach dieselbe Domain-Logik wie die Demo. Diese Lösung ist ein legal kontrollierbarer Eingangsweg, aber kein Ersatz für einen vereinbarten automatischen Datenfeed.
+
+## ADR-027 — Versioniertes Familien-Backup vor Cloud-Accounts
+
+Status: umgesetzt, 12.09.2026
+
+Vor einer Backend- und Auth-Entscheidung erhält die lokale Testversion Datenportabilität über den Umschlag `mydiaper-family-backup` Version 1. Er enthält den vollständigen Familienzustand des aktuellen Schemas v3 und einen Exportzeitpunkt. Beim Einlesen validiert die bestehende Modellgrenze sämtliche IDs, Eigentümerschaften, Produktreferenzen und Werte, bevor der Store den Zustand atomar ersetzt. Ein Browseradapter kapselt Datei-Lesen und -Download, damit UI und Domain keine direkten Plattformaufrufe vermischen.
+
+Angebotsimporte sind bewusst nicht Teil des Familien-Backups: private Langzeitdaten und austauschbare Feed-/Importdaten haben getrennte Lebenszyklen. Das Backup enthält sensible Kinder- und Familiendaten und wird weder hochgeladen noch als Kontosynchronisation bezeichnet. Eine spätere Cloud-Repository-Implementierung kann dieselbe validierte Importgrenze verwenden, benötigt aber weiterhin Authentifizierung, serverseitige Rechteprüfung, Konfliktmodell und Löschkonzept.

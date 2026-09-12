@@ -18,15 +18,15 @@ Status: vorhanden
 Ziel: sauberer lokaler MVP ohne Backend.
 
 ### Aufgaben
-Bereits umgesetzt im ersten Refactoring-Schritt (11.09.2026): normalisierte kinder-/setgebundene lokale Daten, v1→v2-Migration, getrennte Domain-Regeln, Fit-Historie, Speicher-API für persönliche Erfahrungen und automatisierte Kern-/Isolationstests. Dieser Schritt führt keinen Framework-Wechsel ein und schließt Phase 1 noch nicht vollständig ab.
+Bereits umgesetzt (11.–12.09.2026): normalisierte kinder-/setgebundene lokale Daten, v1/v2→v3-Migration, getrennte Domain-Regeln, Fit-/Erfahrungs-/Produkt-/Größenverlauf, bedienbarer Erfahrungseditor, persönliche Finder-Signale, strukturierter Testkatalog, Demo-OfferProvider, lokale Preisalarme, kontrollierter Angebotsimport, versioniertes Familien-Backup, durchgängige Referenzgestaltung und automatisierte Kern-/Isolationstests. Diese Schritte führen keinen Framework-Wechsel ein und schließen Phase 1 noch nicht vollständig ab.
 
 - Datenmodelle vereinheitlichen
 - Kinder anlegen/bearbeiten/löschen
 - mehrere aktive Windelsets pro Kind
 - Vorratsverwaltung vollständig CRUD-fähig
 - Fit-Check-Regeln in eigene Domain-Datei auslagern
-- Produktkatalog strukturieren
-- Demo-Angebotsprovider kapseln
+- Produktkatalog strukturieren — lokales Testmodell umgesetzt
+- Demo-Angebotsprovider kapseln — umgesetzt
 - Börsen-Demo strukturieren
 - Settings/Reminder vollständig
 - UI-Zustände: loading/empty/error
@@ -56,9 +56,11 @@ Bereits umgesetzt im ersten Refactoring-Schritt (11.09.2026): normalisierte kind
 - Cloud-Repository-Implementierungen
 - Offline-Sync
 - Account löschen
-- Export/Backup später
+- lokaler Export/Backup-Umschlag — umgesetzt; Cloud-Sync und Kontolöschung ausstehend
 
 ## Phase 4 — Produktdatenbank
+- lokales, austauschbares Katalogmodell mit stabilen IDs — umgesetzt
+- Produkt-/Größenverlauf pro Kind und Set — lokal umgesetzt
 - Marken
 - Produktlinien
 - Größen
@@ -69,15 +71,16 @@ Bereits umgesetzt im ersten Refactoring-Schritt (11.09.2026): normalisierte kind
 - Korrektur-/Meldeworkflow
 
 ## Phase 5 — Angebote
-- `OfferProvider`-API finalisieren
+- `OfferProvider`-Grundvertrag und Normalisierung — lokal umgesetzt
+- kontrollierter manueller JSON-Import mit Herkunft/Aktualität — lokal umgesetzt
 - erster legaler/vertraglich zulässiger Datenfeed
 - lokale Händler
 - Online-Händler
-- Preis pro Windel
+- Preis pro Windel — umgesetzt
 - Versandkosten
 - Gültigkeitszeitraum
-- Favoriten
-- Preisalarme
+- Favoriten — lokal umgesetzt
+- Preisalarme — lokal umgesetzt, echte Feed-/Push-Auslösung ausstehend
 - optionale Affiliate-Kennzeichnung
 
 ## Phase 6 — Native Funktionen
@@ -102,9 +105,10 @@ Bereits umgesetzt im ersten Refactoring-Schritt (11.09.2026): normalisierte kind
 - Listing-Lifecycle
 
 ## Phase 8 — Personalisierung
-- Erfahrungen pro Kind
-- Produktpräferenzen
-- Größenhistorie
+- Erfahrungen pro Kind und Set — lokal umgesetzt
+- erklärbare Prioritätshinweise und Berücksichtigung letzter Erfahrungen — lokal umgesetzt
+- Produktpräferenzen — Testkatalog-Verknüpfung und Ausschlüsse umgesetzt; echte Herstellerdaten ausstehend
+- Größenhistorie — pro Kind und Set lokal umgesetzt
 - intelligenter Fit-Check
 - individuellere Empfehlungen
 - Familienübersicht

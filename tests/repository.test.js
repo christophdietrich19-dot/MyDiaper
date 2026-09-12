@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {loadApp, memoryStorage, plain} = require('./helpers.cjs');
 const normal = {leak:'no',marks:'no',closure:'good',night:'no'};
-const v1key = 'mydiaper-v1-state', v2key = 'mydiaper-v2-state';
+const v1key = 'mydiaper-v1-state', v2key = 'mydiaper-v2-state', v3key = 'mydiaper-v3-state';
 function fixture(){const loaded=loadApp();return {...loaded, repo:loaded.app.repository, store:loaded.app.store};}
 
 test('v1 wird verlustfrei migriert: eindeutige Sets, kein vervielfachter Vorrat, alter Speicher bleibt erhalten', () => {
@@ -12,7 +12,7 @@ test('v1 wird verlustfrei migriert: eindeutige Sets, kein vervielfachter Vorrat,
   defaults.settings.location = 'Testort';
   const original = JSON.stringify(defaults), storage = memoryStorage({[v1key]:original});
   const {app} = loadApp(storage), state = app.store.get();
-  assert.equal(state.schemaVersion, 2);
+  assert.equal(state.schemaVersion, 3);
   assert.equal(state.diaperSets.length, 5);
   assert.equal(app.repository.viewChild('emma').stock, 41);
   const night = app.repository.listSets('leo').find(s=>s.purpose==='night');
@@ -25,8 +25,23 @@ test('v1 wird verlustfrei migriert: eindeutige Sets, kein vervielfachter Vorrat,
   assert.deepEqual(plain(state.market), defaults.market);
   assert.deepEqual(plain(state.chats), defaults.chats);
   assert.equal(storage.getItem(v1key), original);
+  assert.ok(storage.getItem(v3key));
   assert.deepEqual(plain(loadApp(storage).app.store.get()), plain(state));
   assert.ok(state.children.every(c=>!('stock' in c)&&!('currentSize' in c)&&!('types' in c)));
+});
+test('v2 wird einmalig nach v3 migriert, mit Katalogverknüpfung und Größenstartpunkten',()=>{
+  const first=loadApp(),v2=plain(first.app.store.get());
+  v2.schemaVersion=2;delete v2.sizeHistory;delete v2.priceAlerts;
+  v2.diaperSets.forEach(set=>set.productSizeId=null);
+  v2.inventoryLots.forEach(lot=>lot.productSizeId=null);
+  const original=JSON.stringify(v2),storage=memoryStorage({[v2key]:original}),loaded=loadApp(storage),state=loaded.app.store.get();
+  assert.equal(state.schemaVersion,3);
+  assert.equal(state.sizeHistory.length,state.diaperSets.length);
+  assert.deepEqual(plain(state.priceAlerts),[]);
+  assert.equal(loaded.app.repository.viewChild('emma').currentLine,'Premium Protection');
+  assert.equal(loaded.app.repository.listSets('emma')[0].productSizeId,'size-pampers-premium-protection-3');
+  assert.equal(storage.getItem(v2key),original);
+  assert.ok(storage.getItem(v3key));
 });
 test('Kinder und vier parallele Sets besitzen voneinander getrennte Bestände und Verbräuche', () => {
   const {repo,store} = fixture();
@@ -70,6 +85,11 @@ test('Fit-Historie und persönliche Erfahrungen bleiben getrennt pro Kind und Se
   assert.equal(loaded.listExperiences('emma')[0].notes,'Passt gut');
   assert.equal(loaded.listFitChecks('emma').length,2);
 });
+test('Ungültige Produkterfahrungen werden atomar abgewiesen',()=>{
+  const {repo,store}=fixture(),set=repo.listSets('emma')[0].id,before=plain(store.get());
+  for(const input of [{fitRating:0},{leakRating:6},{nightRating:2.5},{skinComfortRating:'x'},{sizeTendency:'maybe'},{avoidRecommendation:'yes'}]) assert.throws(()=>repo.saveExperience('emma',set,input));
+  assert.deepEqual(plain(store.get()),before);
+});
 test('Profilbearbeitung verändert ausschließlich das Hauptset des bearbeiteten Kindes', () => {
   const {repo} = fixture(), leo = repo.viewChild('leo');
   const night = repo.listSets('leo')[1].id;
@@ -82,6 +102,19 @@ test('Profilbearbeitung verändert ausschließlich das Hauptset des bearbeiteten
   assert.equal(after.currentSize,'7');
   assert.equal(repo.viewChild('leo').stock,31);
   assert.equal(repo.viewChild('emma').stock,36);
+});
+test('Größenverlauf und Katalogzuordnung bleiben pro Kind und Set getrennt',()=>{
+  const {repo}=fixture(),emma=repo.listSets('emma')[0],leo=repo.listSets('leo')[0];
+  const beforeLeo=plain(repo.listSizeHistory('leo',leo.id));
+  repo.updateSet('emma',emma.id,{size:'4'});
+  repo.assignProduct('emma',emma.id,'size-pampers-baby-dry-5');
+  const history=repo.listSizeHistory('emma',emma.id);
+  assert.equal(history.at(-2).toSize,'4');
+  assert.equal(history.at(-1).fromSize,'4');
+  assert.equal(history.at(-1).toSize,'5');
+  assert.equal(repo.viewChild('emma').currentLine,'Baby-Dry');
+  assert.deepEqual(plain(repo.listSizeHistory('leo',leo.id)),beforeLeo);
+  assert.throws(()=>repo.assignProduct('emma',emma.id,'size-pampers-pants-5'));
 });
 test('Kategorien entfernen und reaktivieren verliert weder Bestände noch Historie', () => {
   const {repo} = fixture(), leo=repo.viewChild('leo'), night=repo.listSets('leo')[1].id;
