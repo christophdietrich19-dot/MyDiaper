@@ -1,41 +1,31 @@
-window.MyDiaper = window.MyDiaper || {}; MyDiaper.features = MyDiaper.features || {};
+window.MyDiaper=window.MyDiaper||{};MyDiaper.features=MyDiaper.features||{};
 
-MyDiaper.features.diapers = function(ctx){
-  const c = ctx.activeChild();
-  const rec = ctx.recommendSize(c.weight);
-  const days = ctx.daysText(c);
-  const fit = ctx.latestFit();
-  return `
+MyDiaper.features.diapers=function(ctx){
+  const c=ctx.activeChild(),rec=ctx.recommendSize(c.weight),days=ctx.daysText(c),fit=ctx.latestFit();
+  const experiences=ctx.experiencesFor(c.setId),experience=experiences.at(-1);
+  const set=ctx.activeSets().find(item=>item.id===c.setId);
+  const candidates=MyDiaper.domain.catalog.candidates(MyDiaper.productCatalog,{size:c.currentSize,purpose:set.purpose,priorities:[],experiences:ctx.experiencesFor(),currentProductSizeId:set.productSizeId}).slice(0,3);
+  const average=MyDiaper.domain.personalization.average(experience);
+  const purposeIcon=purpose=>purpose==='night'?'clock':purpose==='swim'?'drop':purpose==='pants'?'swap':'diaper';
+  const traitLabel=trait=>({skin:'Hautkomfort',fit:'Passform',absorb:'Saugkraft',night:'Nacht',eco:'Material'})[trait]||trait;
+  return `<div class="diapers-screen">
     ${ctx.screenHeader('Meine Windeln')}
-    <div class="inventory-shortcuts"><span class="muted">Finder, Fit-Check & Vorrat</span><button class="btn secondary sm" data-action="route" data-route="finder">${ctx.icon('search')} Finder öffnen</button></div>
-    <section class="section">${ctx.childSwitcher()}</section>
-
-    <section class="section grid-2">
-      <div class="card">
-        <div class="eyebrow">Allgemeine Empfehlung</div>
-        <div class="flex-between" style="margin-top:8px"><div><h2 style="font-size:1.55rem;margin-bottom:4px">Größe ${rec}</h2><span class="muted">bei ${c.weight.toFixed(1).replace('.',',')} kg</span></div><div class="product-thumb">🩲</div></div>
-        <p class="inline-note" style="margin-top:14px">Richtwert nach Gewicht. Herstellerbereiche und echter Sitz können abweichen.</p>
-        <button class="btn primary block" data-action="fit-check">Passform genauer prüfen</button>
-      </div>
-      <div class="card">
-        <div class="eyebrow">Letzter Fit-Check</div>
-        ${fit ? `<h2 style="margin-top:8px">${ctx.esc(fit.result)}</h2><p class="muted">${ctx.esc(fit.note)}</p><span class="badge success">Gespeichert</span>` : `<div class="empty"><div class="big">✓</div><p>Noch kein spezifischer Fit-Check für ${ctx.esc(c.name)}.</p></div>`}
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-heading"><h2>Aktiver Vorrat</h2><button class="btn secondary sm" data-action="add-stock">+ Packung / Stück</button></div>
-      <div class="card">
-        <div class="flex-between"><div><strong>${ctx.esc(c.currentBrand)} ${ctx.esc(c.currentLine)}</strong><div class="muted">Größe ${ctx.esc(c.currentSize)} · ${ctx.esc(c.setLabel)}</div></div><span class="badge ${c.lowStock?'warning':'success'}">ca. ${days} Tage</span></div>
-        <div class="progress" style="margin:14px 0 8px"><span style="width:${c.progress}%"></span></div>
-        <div class="flex-between"><span><strong>${c.stock}</strong> Stück übrig</span><span>Ø ${c.dailyUse}/Tag</span></div>
-        <div class="grid-2" style="margin-top:14px"><button class="btn ghost" data-action="use-one">− 1 verbraucht</button><button class="btn secondary" data-action="edit-stock">Vorrat bearbeiten</button></div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-heading"><h2>Aktive Windelarten</h2><button class="btn ghost sm" data-action="edit-child">Bearbeiten</button></div>
-      <div class="grid-2">${ctx.activeSets().map(set=>`<button class="card soft" style="text-align:left;color:inherit" data-action="select-set" data-id="${ctx.esc(set.id)}" aria-pressed="${set.id===c.setId}" aria-label="${ctx.esc(set.label)} für ${ctx.esc(c.name)} auswählen"><strong>${ctx.esc(set.label)}</strong><div class="muted">für ${ctx.esc(c.name)}</div></button>`).join('')}</div>
-    </section>
-  `;
+    <div class="page-intro"><div><p class="eyebrow">Für ${ctx.esc(c.name)}</p><h2>Finder, Fit-Check & Vorrat</h2></div><button class="round-action" data-action="route" data-route="finder" aria-label="Windel-Finder öffnen">${ctx.icon('search')}</button></div>
+    <section class="family-strip" aria-label="Kinderprofil wählen">${ctx.childSwitcher()}</section>
+    <section class="set-section"><div class="section-heading"><div><p class="eyebrow">Aktives Set</p><h2>Welche Windel nutzt ihr?</h2></div><button class="text-btn" data-action="edit-child">Sets bearbeiten</button></div>
+      <div class="set-selector">${ctx.activeSets().map(set=>`<button class="set-pill ${set.id===c.setId?'selected':''}" data-action="select-set" data-id="${ctx.esc(set.id)}" aria-pressed="${set.id===c.setId}" aria-label="${ctx.esc(set.label)} für ${ctx.esc(c.name)} auswählen"><span>${ctx.icon(purposeIcon(set.purpose))}</span><strong>${ctx.esc(set.label)}</strong><small>Größe ${ctx.esc(set.size)}</small></button>`).join('')}</div></section>
+    <section class="recommendation-panel"><div class="panel-icon blue">${ctx.icon('shield')}</div><div class="recommendation-copy"><span class="eyebrow">Größen-Richtwert</span><h2>Größe ${ctx.esc(rec)}</h2><p>bei ${c.weight.toFixed(1).replace('.',',')} kg · tatsächlichen Sitz prüfen</p></div>
+      <button class="btn primary block" data-action="fit-check">${ctx.icon('check')} Passform genauer prüfen</button>
+      <div class="last-result ${fit?'has-result':''}">${fit?`<span>${ctx.icon('check')}</span><div><strong>${ctx.esc(fit.result)}</strong><small>${ctx.esc(fit.note)}</small></div>`:`<span>${ctx.icon('clock')}</span><div><strong>Noch kein Fit-Check</strong><small>Vier kurze Fragen schaffen mehr Klarheit für dieses Set.</small></div>`}</div></section>
+    <section class="inventory-panel"><div class="section-heading"><div><p class="eyebrow">Aktiver Vorrat</p><h2>${ctx.esc(c.currentBrand)} ${ctx.esc(c.currentLine)}</h2><small>Größe ${ctx.esc(c.currentSize)} · ${ctx.esc(c.setLabel)}</small></div><span class="stock-days ${c.lowStock?'warning':''}"><strong>${days}</strong><small>Tage</small></span></div>
+      <div class="stock-number"><strong>${c.stock}</strong><span>Stück übrig<br><small>Ø ${c.dailyUse}/Tag</small></span></div><div class="progress"><span style="width:${c.progress}%"></span></div>
+      <div class="inventory-actions"><button class="btn soft-button" data-action="use-one">− 1 verbraucht</button><button class="btn soft-button" data-action="add-stock">${ctx.icon('plus')} Vorrat ergänzen</button><button class="btn ghost" data-action="edit-stock">Bearbeiten</button></div></section>
+    <section class="experience-panel"><div class="section-heading"><div><p class="eyebrow">Persönlich für ${ctx.esc(c.name)}</p><h2>Produkterfahrung</h2></div>${ctx.icon('heart','experience-heart')}</div>
+      ${experience?`<div class="experience-summary"><div class="score-orb"><strong>${average===null?'–':average.toFixed(1).replace('.',',')}</strong><small>von 5</small></div><div><strong>${experience.avoidRecommendation?'Nicht erneut empfehlen':'Erfahrung gespeichert'}</strong><p>${ctx.esc(experience.notes||({small:'Fällt eher klein aus.',normal:'Wirkt größenentsprechend.',large:'Fällt eher groß aus.'}[experience.sizeTendency]||'Für dieses Set bewertet.'))}</p></div></div>`:`<div class="experience-empty"><span>${ctx.icon('heart')}</span><div><strong>Noch keine Erfahrung gespeichert</strong><p>Bewerte Passform, Auslaufschutz, Nachtleistung und Hautkomfort getrennt für dieses Kind.</p></div></div>`}
+      <div class="experience-actions"><button class="btn primary" data-action="experience-${experience?'edit':'add'}" ${experience?`data-id="${ctx.esc(experience.id)}"`:''}>${experience?'Erfahrung bearbeiten':'Erfahrung eintragen'}</button><button class="btn ghost" data-action="history">Verlauf</button></div></section>
+    <section class="catalog-panel"><div class="section-heading"><div><p class="eyebrow">Interner Testkatalog</p><h2>Produkte für Größe ${ctx.esc(c.currentSize)}</h2></div><span class="catalog-count">${candidates.length}</span></div>
+      <p class="catalog-intro">Strukturierte Produktgrößen für Vergleiche und spätere Angebotsquellen. Eigenschaften und Gewichtsbereiche sind Testdaten.</p>
+      <div class="catalog-cards">${candidates.length?candidates.map(item=>`<article class="catalog-card ${item.productSizeId===set.productSizeId?'selected':''}"><div class="catalog-card-top"><span class="catalog-product-icon">${ctx.icon(purposeIcon(item.category))}</span><div><strong>${ctx.esc(item.brand)} ${ctx.esc(item.line)}</strong><small>${MyDiaper.domain.catalog.labelForCategory(item.category)} · Größe ${ctx.esc(item.size)}</small></div>${item.productSizeId===set.productSizeId?'<span class="badge success">Aktuell</span>':''}</div><div class="catalog-traits">${item.traits.map(trait=>`<span>${ctx.esc(traitLabel(trait))}</span>`).join('')}</div><div class="catalog-meta"><span>${item.minWeightKg??'–'}–${item.maxWeightKg??'–'} kg</span><span>${item.packages.length?`${item.packages.map(pack=>pack.unitsPerPack).join(' / ')} Stück`:'Packungen folgen'}</span></div>${item.productSizeId!==set.productSizeId?`<button class="btn ghost block" data-action="catalog-assign" data-id="${ctx.esc(item.productSizeId)}">Für dieses Set verwenden</button>`:''}</article>`).join(''):'<div class="friendly-empty compact"><strong>Noch kein passender Katalogeintrag</strong><p>Das Set bleibt als persönliche Angabe vollständig nutzbar.</p></div>'}</div>
+      <p class="catalog-disclaimer">Keine Hersteller- oder Live-Daten. Der Katalog ist für die technische Testversion vorbereitet.</p></section>
+  </div>`;
 };
