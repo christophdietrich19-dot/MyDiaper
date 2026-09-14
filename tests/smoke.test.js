@@ -46,11 +46,12 @@ test('Set-Auswahl bleibt pro Kind getrennt, Fit-Check und Verbrauch folgen dem g
 });
 test('Neues Profil behält die vorhandene Formularfunktion und erhält getrennte Sets', () => {
   const loaded=loadApp();
-  loaded.submit('childForm',{name:'Testkind',birthdate:'2026-01-01',weight:'6',height:'60',brand:'Pampers',size:'3',dailyUse:'6',stock:'30',types:'Windel, Nachtwindel'});
+  loaded.submit('childForm',{name:'Testkind',birthdate:'2026-01-01',weight:'6',height:'60',color:'sage',brand:'Pampers',size:'3',dailyUse:'6',stock:'30',types:'Windel, Nachtwindel'});
   const childId=loaded.app.store.get().activeChildId, repo=loaded.app.repository;
   assert.equal(repo.viewChild(childId).name,'Testkind');
   assert.equal(repo.viewChild(childId).stock,30);
   assert.equal(repo.viewChild(childId).currentLine,'Premium');
+  assert.equal(repo.viewChild(childId).color,'sage');
   assert.equal(repo.listSets(childId).length,2);
   assert.equal(repo.viewChild('emma').stock,36);
 });

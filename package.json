@@ -1,20 +1,30 @@
 {
   "name": "mydiaper",
-  "version": "1.0.0-test",
+  "version": "1.1.2-test",
   "private": true,
   "description": "MyDiaper test prototype – static PWA prepared for later Capacitor wrapping.",
   "scripts": {
     "test": "node --test tests/*.test.js",
-    "serve": "npx serve .",
+    "serve": "node scripts/serve-local.js",
     "build:web": "node scripts/build-web.js",
+    "assets:brand": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/generate-brand-assets.ps1",
+    "release:check": "node scripts/release-check.js",
+    "release:check:store": "node scripts/release-check.js --store",
     "cap:add:android": "npm run build:web && npx cap add android",
     "cap:add:ios": "npm run build:web && npx cap add ios",
-    "cap:sync": "npm run build:web && npx cap sync"
+    "cap:sync": "npm run build:web && npx cap sync",
+    "cap:doctor": "npx cap doctor",
+    "cap:open:android": "npx cap open android",
+    "cap:open:ios": "npx cap open ios",
+    "android:build:debug": "npm run cap:sync && cd android && gradlew.bat --no-daemon assembleDebug",
+    "android:signing:init": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/init-android-signing.ps1",
+    "android:build:test-release": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-android-test-release.ps1",
+    "android:check": "cd android && gradlew.bat --no-daemon testDebugUnitTest lintDebug"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.5.1",
-    "@capacitor/core": "^8.5.1",
-    "@capacitor/android": "^8.5.1",
-    "@capacitor/ios": "^8.5.1"
+    "@capacitor/android": "8.5.2",
+    "@capacitor/cli": "8.4.3",
+    "@capacitor/core": "8.5.2",
+    "@capacitor/ios": "8.5.2"
   }
 }

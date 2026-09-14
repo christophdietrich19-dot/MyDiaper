@@ -21,6 +21,15 @@ test('Finder durchläuft vier Schritte ohne Profile oder Bestände zu verändern
   assert.deepEqual(plain(t.app.store.get()),before);
 });
 
+test('Finder zeigt erweiterte Altersstufen bis sechs Jahre ohne feste Obergrenze',()=>{
+  const t=loadApp();t.click('route',{route:'finder'});
+  const html=t.elements.get('app').innerHTML;
+  for(const value of ['1–2','2–3','3–4','4–6','6+'])assert.ok(html.includes(value),value);
+  assert.match(html,/Nachtwindeln zusätzlich bis 6 Jahre/);
+  t.click('finder-choice',{field:'age',value:'4-6y'});
+  assert.equal(t.app.finder.state(t.app.repository.viewChild('emma')).age,'4-6y');
+});
+
 test('Finder-Entwürfe bleiben pro Kind getrennt und Profilcheck verwendet das gewählte Set',()=>{
   const t=loadApp(),repo=t.app.repository,originalWeight=repo.viewChild('emma').weight;
   t.click('route',{route:'finder'});
@@ -78,6 +87,17 @@ test('Alle lokalen Designressourcen existieren und sind im Offline-Cache',()=>{
   const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
   for(const match of sw.matchAll(/'\.\/([^']+)'/g)) assert.ok(fs.existsSync(path.join(root,match[1])),match[1]);
   for(const asset of ['css/reference.css','assets/fonts/nunito-regular.ttf','assets/fonts/nunito-semibold.ttf','assets/fonts/nunito-bold.ttf','assets/fonts/caveat-medium.ttf','assets/images/design-reference.png','assets/images/sleeping-baby.png','assets/images/elephant.png']) assert.ok(sw.includes(`'./${asset}'`),asset);
+});
+
+test('Profilfarbe ist frei wählbar und steuert Avatar sowie Startkarten-Akzent',()=>{
+  const t=loadApp(),child=t.app.repository.viewChild('emma');
+  t.click('route',{route:'profile'});t.click('edit-specific-child',{id:'emma'});
+  assert.match(t.elements.get('modalRoot').innerHTML,/Profilfarbe/);
+  assert.match(t.elements.get('modalRoot').innerHTML,/nicht an ein Geschlecht gekoppelt/);
+  t.submit('childForm',{name:child.name,birthdate:child.birthdate,weight:String(child.weight),height:String(child.height),color:'sun',brand:child.currentBrand,size:child.currentSize,dailyUse:String(child.dailyUse),stock:String(child.stock),types:child.types.join(', ')},{id:'emma'});
+  assert.equal(t.app.repository.viewChild('emma').color,'sun');
+  t.click('route',{route:'today'});
+  assert.match(t.elements.get('app').innerHTML,/today-hero theme-sun/);
 });
 
 test('Erfahrungseditor speichert Bewertungen eindeutig für Kind und Set',()=>{

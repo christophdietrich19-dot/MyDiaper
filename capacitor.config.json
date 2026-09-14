@@ -1,6 +1,14 @@
 {
   "appId": "de.christophit.mydiaper",
-  "appName": "MyDiaper",
+  "appName": "MyDiaper Testversion 1.1.2",
   "webDir": "www",
-  "server": { "androidScheme": "https" }
+  "backgroundColor": "#e9f8f2",
+  "server": { "androidScheme": "https", "cleartext": false },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DARK",
+      "hidden": false
+    }
+  }
 }

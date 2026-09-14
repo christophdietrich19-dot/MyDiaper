@@ -1,10 +1,14 @@
 {
-  "name": "MyDiaper",
-  "short_name": "MyDiaper",
+  "name": "MyDiaper Testversion 1.1.2",
+  "short_name": "MyDiaper Test",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f7fbfa",
   "theme_color": "#e9f8f2",
   "description": "Windel-Finder, Vorrat, Angebote und Windelbörse für Familien.",
-  "icons": [{"src":"assets/icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "icons": [
+    {"src":"assets/icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"assets/icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"},
+    {"src":"assets/icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}
+  ]
 }
