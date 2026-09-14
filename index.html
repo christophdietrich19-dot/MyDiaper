@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#e9f8f2" />
   <meta name="description" content="MyDiaper – Windel-Finder, Vorrat, Angebote und Windelbörse für Familien." />
-  <title>MyDiaper Testversion 1.1.2</title>
+  <title>MyDiaper Testversion 1.1.3</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/reference.css" />
+  <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css" />
 </head>
 <body>
   <a class="skip-link" href="#app">Zum Inhalt springen</a>
@@ -51,6 +52,7 @@
   <script src="js/domain/fit-check.js" defer></script>
   <script src="js/domain/personalization.js" defer></script>
   <script src="js/domain/inventory.js" defer></script>
+  <script src="js/domain/activity.js" defer></script>
   <script src="js/domain/reminders.js" defer></script>
   <script src="js/domain/barcodes.js" defer></script>
   <script src="js/domain/marketplace.js" defer></script>
@@ -68,9 +70,14 @@
   <script src="js/store.js" defer></script>
   <script src="js/platform/browser-files.js" defer></script>
   <script src="js/platform/capabilities.js" defer></script>
+  <script src="js/platform/location.js" defer></script>
+  <script src="js/platform/navigation.js" defer></script>
   <script src="js/ui/family-context.js" defer></script>
   <script src="js/ui/visuals.js" defer></script>
   <script src="js/ui/offer-visuals.js" defer></script>
+  <script src="js/ui/product-fields.js" defer></script>
+  <script src="assets/vendor/leaflet/leaflet.js"></script>
+  <script src="js/ui/offer-map.js" defer></script>
   <script src="js/features/today.js" defer></script>
   <script src="js/features/diapers.js" defer></script>
   <script src="js/features/offers.js" defer></script>

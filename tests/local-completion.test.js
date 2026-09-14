@@ -2,12 +2,14 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const {loadApp,plain}=require('./helpers.cjs');
 
-test('Datenversion 4 ergänzt lokale CRUD- und Freigabedaten',()=>{
+test('Datenversion 5 ergänzt lokale CRUD-, Begrüßungs- und Aktivitätsdaten',()=>{
   const {app}=loadApp(),state=app.store.get();
-  assert.equal(state.schemaVersion,4);
+  assert.equal(state.schemaVersion,5);
   for(const name of ['marketReports','marketBlocks','catalogCorrections'])assert.ok(Array.isArray(state[name]));
   assert.deepEqual(plain(state.settings.reminderConfig),{stockDays:4,sizeCheckWeeks:4,quietStart:'20:00',quietEnd:'08:00'});
   assert.ok(state.children.every(child=>'archivedAt' in child));
+  assert.deepEqual(plain(state.settings.salutation),{choice:'parent',customName:'',completed:false});
+  assert.ok(state.inventoryLots.every(lot=>lot.storageLocation));
 });
 
 test('Kinder werden zuerst archiviert, wiederhergestellt und anschließend kaskadierend gelöscht',()=>{

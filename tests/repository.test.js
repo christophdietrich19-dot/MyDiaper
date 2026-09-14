@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {loadApp, memoryStorage, plain} = require('./helpers.cjs');
 const normal = {leak:'no',marks:'no',closure:'good',night:'no'};
-const v1key = 'mydiaper-v1-state', v2key = 'mydiaper-v2-state', v3key = 'mydiaper-v3-state', v4key = 'mydiaper-v4-state';
+const v1key = 'mydiaper-v1-state', v2key = 'mydiaper-v2-state', v3key = 'mydiaper-v3-state', v4key = 'mydiaper-v4-state', v5key = 'mydiaper-v5-state';
 function fixture(){const loaded=loadApp();return {...loaded, repo:loaded.app.repository, store:loaded.app.store};}
 
 test('v1 wird verlustfrei migriert: eindeutige Sets, kein vervielfachter Vorrat, alter Speicher bleibt erhalten', () => {
@@ -12,7 +12,7 @@ test('v1 wird verlustfrei migriert: eindeutige Sets, kein vervielfachter Vorrat,
   defaults.settings.location = 'Testort';
   const original = JSON.stringify(defaults), storage = memoryStorage({[v1key]:original});
   const {app} = loadApp(storage), state = app.store.get();
-  assert.equal(state.schemaVersion, 4);
+  assert.equal(state.schemaVersion, 5);
   assert.equal(state.diaperSets.length, 5);
   assert.equal(app.repository.viewChild('emma').stock, 41);
   const night = app.repository.listSets('leo').find(s=>s.purpose==='night');
@@ -25,23 +25,23 @@ test('v1 wird verlustfrei migriert: eindeutige Sets, kein vervielfachter Vorrat,
   assert.deepEqual(plain(state.market.map(item=>item.title)), defaults.market.map(item=>item.title));
   assert.equal(state.chats.m1.length,defaults.chats.m1.length);
   assert.equal(storage.getItem(v1key), original);
-  assert.ok(storage.getItem(v4key));
+  assert.ok(storage.getItem(v5key));
   assert.deepEqual(plain(loadApp(storage).app.store.get()), plain(state));
   assert.ok(state.children.every(c=>!('stock' in c)&&!('currentSize' in c)&&!('types' in c)));
 });
-test('v2 wird einmalig nach v4 migriert, mit Katalogverknüpfung und Größenstartpunkten',()=>{
+test('v2 wird einmalig nach v5 migriert, mit Katalogverknüpfung und Größenstartpunkten',()=>{
   const first=loadApp(),v2=plain(first.app.store.get());
   v2.schemaVersion=2;delete v2.sizeHistory;delete v2.priceAlerts;
   v2.diaperSets.forEach(set=>set.productSizeId=null);
   v2.inventoryLots.forEach(lot=>lot.productSizeId=null);
   const original=JSON.stringify(v2),storage=memoryStorage({[v2key]:original}),loaded=loadApp(storage),state=loaded.app.store.get();
-  assert.equal(state.schemaVersion,4);
+  assert.equal(state.schemaVersion,5);
   assert.equal(state.sizeHistory.length,state.diaperSets.length);
   assert.deepEqual(plain(state.priceAlerts),[]);
   assert.equal(loaded.app.repository.viewChild('emma').currentLine,'Premium Protection');
   assert.equal(loaded.app.repository.listSets('emma')[0].productSizeId,'size-pampers-premium-protection-3');
   assert.equal(storage.getItem(v2key),original);
-  assert.ok(storage.getItem(v4key));
+  assert.ok(storage.getItem(v5key));
 });
 test('Kinder und vier parallele Sets besitzen voneinander getrennte Bestände und Verbräuche', () => {
   const {repo,store} = fixture();

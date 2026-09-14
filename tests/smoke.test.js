@@ -32,6 +32,7 @@ test('Set-Auswahl bleibt pro Kind getrennt, Fit-Check und Verbrauch folgen dem g
   assert.match(loaded.elements.get('modalRoot').innerHTML,new RegExp(`data-set-id="${night}"`));
   loaded.submit('addStockForm',{amount:'14'},{childId:'leo',setId:night});
   loaded.click('use-one');
+  loaded.submit('activityForm',{setId:night,contents:'wet',usedAt:'2026-09-14T10:00',note:''},{childId:'leo',id:''});
   assert.equal(repo.viewChild('leo',night).stock,13);
   assert.equal(repo.viewChild('leo').stock,54);
   loaded.click('fit-check');
@@ -42,6 +43,7 @@ test('Set-Auswahl bleibt pro Kind getrennt, Fit-Check und Verbrauch folgen dem g
   assert.equal(repo.listFitChecks('leo',night).length,1);
   loaded.click('switch-child',{id:'leo'});
   loaded.click('use-one');
+  loaded.submit('activityForm',{setId:night,contents:'dry',usedAt:'2026-09-14T11:00',note:''},{childId:'leo',id:''});
   assert.equal(repo.viewChild('leo',night).stock,12);
 });
 test('Neues Profil behält die vorhandene Formularfunktion und erhält getrennte Sets', () => {

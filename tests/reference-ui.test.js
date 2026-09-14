@@ -58,7 +58,7 @@ test('Finder weist ungültiges Gewicht zurück und bleibt im zweiten Schritt',()
 
 test('Karte, Gesamtliste, Online-Angebote, Suche und Favoriten funktionieren',()=>{
   const t=loadApp();t.click('route',{route:'offers'});
-  assert.match(t.elements.get('app').innerHTML,/Beispielkarte · Berlin/);
+  assert.match(t.elements.get('app').innerHTML,/Echte Karte · Angebotsmarker sind Demo/);
   t.click('map-store',{id:'reference-rossmann'});
   assert.match(t.elements.get('app').innerHTML,/deal-description"><h3>HiPP/);
   t.click('favorite-offer',{id:'reference-rossmann'});

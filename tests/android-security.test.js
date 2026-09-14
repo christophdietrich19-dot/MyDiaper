@@ -15,6 +15,15 @@ test('Android manifest blocks backups and cleartext traffic',()=>{
   assert.match(manifest,/android:networkSecurityConfig="@xml\/network_security_config"/);
 });
 
+test('Android location stays foreground-only and uses explicit fine/coarse permissions',()=>{
+  const manifest=fs.readFileSync(path.join(root,'android/app/src/main/AndroidManifest.xml'),'utf8');
+  assert.match(manifest,/android\.permission\.ACCESS_COARSE_LOCATION/);
+  assert.match(manifest,/android\.permission\.ACCESS_FINE_LOCATION/);
+  assert.doesNotMatch(manifest,/ACCESS_BACKGROUND_LOCATION/);
+  assert.match(manifest,/android:name="android\.hardware\.location" android:required="false"/);
+  assert.match(manifest,/android:name="android\.hardware\.location\.gps" android:required="false"/);
+});
+
 test('FileProvider does not expose all external storage',()=>{
   const paths=read('android/app/src/main/res/xml/file_paths.xml');
   assert.doesNotMatch(paths,/<external-path\b/);

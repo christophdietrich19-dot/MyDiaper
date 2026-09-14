@@ -14,7 +14,7 @@ const required=[
   'android/app/src/main/res/xml/data_extraction_rules.xml',
   'android/app/src/main/res/xml/network_security_config.xml',
   'scripts/init-android-signing.ps1','scripts/build-android-test-release.ps1','.gitignore',
-  'docs/STORE_RELEASE.md','docs/PRIVACY_DATA_INVENTORY.md','docs/STORE_METADATA_DRAFT.md',
+  'docs/STORE_RELEASE.md','docs/PRIVACY_DATA_INVENTORY.md','docs/STORE_METADATA_DRAFT.md','THIRD_PARTY_NOTICES.md',
   'docs/OPERATOR_QUESTIONNAIRE.md','docs/NATIVE_READINESS.md','docs/MARKETPLACE_LOCAL_DEMO.md'
 ];
 const failures=[],gates=[];
