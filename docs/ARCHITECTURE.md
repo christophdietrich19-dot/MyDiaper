@@ -25,11 +25,15 @@ index.html (klassische Skripte)
     catalog.js                      Katalogvalidierung und Produktvergleich
     offers.js                       Angebotsnormalisierung, Aktualität, Alarmvergleich
     pricing.js                      Stückpreis, Preisvergleich
+    age-bands.js                    Alterskontext bis vier, nachts bis sechs, danach offen
     sizes.js                        Gewichts-Richtwert
     fit-check.js                    Fit-Regeln, Ergebniscodes
     personalization.js             validierte Erfahrungen, erklärbare Signale
     inventory.js                    Bestand, FIFO, Reichweite
-    model.js                        Schema v3, Migration, Referenzprüfung
+    reminders.js                    validierte Schwellen und Ruhezeiten
+    barcodes.js                     GTIN-Prüfung und Korrekturentwürfe
+    marketplace.js                  lokale Listing-/Chat-/Safety-Regeln
+    model.js                        Schema v4, Migration, Referenzprüfung
     backup.js                       versioniertes Familien-Backupformat
   js/storage/
     defaults.js                     ursprüngliche Demo als Migrationseingang
@@ -39,10 +43,13 @@ index.html (klassische Skripte)
     family-repository.js            kinder-/setgebundene Operationen
     offer-repository.js             kindgebundene lokale Preisalarme
     offer-import-repository.js      geprüfte Angebotsquellen verwalten
+    marketplace-repository.js       lokaler Börsen-Lifecycle und Safety-Aktionen
+    catalog-correction-repository.js lokale Produktkorrekturentwürfe
   js/services/
     offer-provider.js               austauschbarer Angebotsprovider-Vertrag
   js/store.js                       Zusammensetzen von Store und Repository
   js/platform/browser-files.js      lokaler Dateiimport/-download im Web
+  js/platform/capabilities.js       Web-/Capacitor-Fähigkeiten ohne Direktzugriffe im UI
   js/ui/family-context.js            Set-Auswahl, UI-Projektion
   js/ui/visuals.js                   Symbole, Referenzgrafiken
   js/ui/offer-visuals.js              Angebotsdarstellung, Referenz-Demos
@@ -55,9 +62,9 @@ docs/                               Spezifikation und Entscheidungen
 www/                                generierter Web-/Capacitor-Build
 ```
 
-Datenfluss Familie: Formular mit festen Kind-/Set-IDs → Repository → Domain-Regeln → validierte Speichertransaktion → UI-Projektion → bestehendes Template. Datenfluss Angebote: Demo-Provider plus separat persistierte Import-Provider → Normalisierung gegen den Produktkatalog → Suche/Sortierung/Aktualitätsstatus → Angebots-UI; Preisalarme laufen getrennt über das lokale OfferRepository. Datenportabilität: Familienzustand → versionierter Backup-Umschlag → Browser-Dateiadapter; beim Einlesen führt derselbe Modellvalidator vor dem atomaren Ersetzen sämtliche Besitz- und Referenzprüfungen aus. Accountbezogene Demo-Einstellungen, Börse und Chat verwenden weiterhin die lokale Store-Schnittstelle. Der spätere Zielbaum unten ist weiterhin eine Roadmap, nicht bereits vollständig implementierte Infrastruktur.
+Datenfluss Familie: Formular mit festen Kind-/Set-IDs → Repository → Domain-Regeln → validierte Speichertransaktion → UI-Projektion → bestehendes Template. Datenfluss Angebote: Demo-Provider plus separat persistierte Import-Provider → Normalisierung gegen den Produktkatalog → Suche/Sortierung/Aktualitätsstatus → Angebots-UI; Preisalarme laufen getrennt über das lokale OfferRepository. Datenportabilität: Familienzustand → versionierter Backup-Umschlag → Browser-Dateiadapter; beim Einlesen führt derselbe Modellvalidator vor dem atomaren Ersetzen sämtliche Besitz- und Referenzprüfungen aus. Die Börse besitzt jetzt ebenfalls Domain- und Repository-Grenzen, bleibt ohne Backend aber eine rein lokale Demo. Der spätere Zielbaum unten ist weiterhin eine Roadmap, nicht bereits vollständig implementierte Infrastruktur.
 
-Der Finder hält nur flüchtige UI-Entwürfe pro Kind und ruft Größen-, Fit-, Personalisierungs- und Katalog-Domain-Module auf; er schreibt keine Profilwerte implizit zurück. Der Erfahrungseditor schreibt über das Familien-Repository mit festen Kind-/Set-IDs. Produkt- und Größenwechsel erhalten einen setbezogenen Verlauf. Visuelle Helfer und Templates dürfen die Eigentümerschaftsprüfung im Repository nicht umgehen. Der aktive Provider liefert deutlich markierte Demo-Datensätze, keinen externen Live-Feed. Details und Grenzen: ADR-017 bis ADR-025 und `ASSETS.md`.
+Der Finder hält nur flüchtige UI-Entwürfe pro Kind und ruft Alters-, Größen-, Fit-, Personalisierungs- und Katalog-Domain-Module auf; er schreibt keine Profilwerte implizit zurück. Altersstufen werden aus dem Geburtsdatum abgeleitet oder im Finder gewählt, beeinflussen die Größenregel aber nicht. Der Erfahrungseditor schreibt über das Familien-Repository mit festen Kind-/Set-IDs. Produkt- und Größenwechsel erhalten einen setbezogenen Verlauf. Visuelle Helfer und Templates dürfen die Eigentümerschaftsprüfung im Repository nicht umgehen. Der aktive Provider liefert deutlich markierte Demo-Datensätze, keinen externen Live-Feed. Details und Grenzen: ADR-017 bis ADR-035 und `ASSETS.md`.
 
 ## 2. Architekturprinzip
 Nicht neu schreiben, nur weil eine modernere Technik verfügbar ist. Schrittweise refaktorieren, sobald ein Feature echten Bedarf erzeugt.

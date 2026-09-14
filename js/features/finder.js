@@ -2,8 +2,8 @@
   const drafts=new Map();
   function state(child){
     if(!drafts.has(child.id)){
-      const months=child.birthdate ? Math.max(0,Math.floor((Date.now()-new Date(child.birthdate))/2629800000)) : 0;
-      drafts.set(child.id,{step:1,age:months<4?'0–3':months<7?'4–6':months<13?'7–12':'12+',
+      const age=MyDiaper.domain.ageBands.fromBirthdate(child.birthdate);
+      drafts.set(child.id,{step:1,age:age.id,
         weight:child.weight,weightBand:child.weight<5?'< 5':child.weight<=8?'5–8':child.weight<=11?'8–11':'11+',
         priorities:['skin'],setId:child.setId,answers:{leak:'no',marks:'no',closure:'good',night:'no'}});
     }
@@ -12,7 +12,7 @@
   function choice(child,field,value){
     const d=state(child);
     if(field==='priority') d.priorities=d.priorities.includes(value)?d.priorities.filter(v=>v!==value):[...d.priorities,value];
-    if(field==='age') d.age=value;
+    if(field==='age'&&MyDiaper.domain.ageBands.get(value)) d.age=value;
     if(field==='weightBand'){d.weightBand=value;d.weight=({'< 5':4,'5–8':6.5,'8–11':9.5,'11+':12})[value];}
     if(field==='setId') d.setId=value;
     if(['leak','marks','closure','night'].includes(field)) d.answers[field]=value;
@@ -20,13 +20,14 @@
   MyDiaper.finder={state,choice,reset:()=>drafts.clear()};
   MyDiaper.features.finder=function(ctx){
     const c=ctx.activeChild(), d=state(c), {icon,art}=ctx;
+    const ageBands=MyDiaper.domain.ageBands.all();
     if(!ctx.activeSets().some(s=>s.id===d.setId)) d.setId=c.setId;
     const title=ctx.screenHeader('Windel-Finder','today');
     const progress=`<ol class="finder-progress" aria-label="Schritt ${d.step} von 4">${[1,2,3,4].map(n=>`<li class="${n===d.step?'current':n<d.step?'done':''}" ${n===d.step?'aria-current="step"':''}>${n}</li>`).join('')}</ol>`;
     let body='';
     if(d.step===1){
       body=`<div class="finder-intro"><div><h2>Wir finden gemeinsam<br>die passende Windel<br>für dein Baby.</h2><p>Nur ein paar schnelle Fragen –<br>und schon geht’s los!</p></div>${art('elephant')}<span class="little-heart">♥</span></div>
-      <section class="finder-group"><h3>Wie alt ist dein Baby?</h3><div class="option-grid">${['0–3','4–6','7–12','12+'].map(v=>`<button class="option ${d.age===v?'selected':''}" data-action="finder-choice" data-field="age" data-value="${v}" aria-pressed="${d.age===v}"><span>${v}</span><small>Monate</small></button>`).join('')}</div></section>
+      <section class="finder-group"><h3>Wie alt ist dein Kind?</h3><div class="option-grid age-options">${ageBands.map(band=>`<button class="option age-option ${d.age===band.id?'selected':''}" data-action="finder-choice" data-field="age" data-value="${band.id}" aria-label="${ctx.esc(MyDiaper.domain.ageBands.describe(band))}${band.context?` · ${ctx.esc(band.context)}`:''}" aria-pressed="${d.age===band.id}"><span>${ctx.esc(band.label)}</span><small>${ctx.esc(band.unit)}${band.context?` · ${ctx.esc(band.context)}`:''}</small></button>`).join('')}</div><p class="age-help">Bis 4 Jahre detailliert, bei Nachtwindeln zusätzlich bis 6 Jahre. Darüber bleibt die Nutzung individuell möglich.</p></section>
       <section class="finder-group"><h3>Wie viel wiegt dein Baby? ${icon('weight')}</h3><div class="option-grid">${['< 5','5–8','8–11','11+'].map(v=>`<button class="option ${d.weightBand===v?'selected':''}" data-action="finder-choice" data-field="weightBand" data-value="${ctx.esc(v)}" aria-pressed="${d.weightBand===v}">${ctx.esc(v)} kg</button>`).join('')}</div></section>
       <section class="finder-group priorities"><h3>Was ist dir besonders wichtig?</h3><p>Du kannst mehrere Optionen wählen.</p><div class="priority-list">${[['skin','leaf','Besonders hautfreundlich'],['absorb','drop','Hohe Saugkraft'],['fit','shield','Guter Sitz'],['eco','leaf','Nachhaltige Materialien']].map(([id,i,label])=>`<button class="priority ${d.priorities.includes(id)?'selected':''}" data-action="finder-choice" data-field="priority" data-value="${id}" aria-pressed="${d.priorities.includes(id)}">${icon(i,id)}<span>${label}</span></button>`).join('')}</div></section>`;
     } else if(d.step===2){
@@ -36,7 +37,7 @@
     } else {
       const size=ctx.recommendSize(d.weight),fit=MyDiaper.domain.fitCheck.evaluate(d.answers,size);
       const set=ctx.activeSets().find(item=>item.id===d.setId),experiences=ctx.experiencesFor(d.setId);
-      const personal=MyDiaper.domain.personalization.summarize({ageBand:d.age,weight:d.weight,recommendedSize:size,priorities:d.priorities,fit,set,experiences});
+      const personal=MyDiaper.domain.personalization.summarize({ageBand:MyDiaper.domain.ageBands.describe(d.age),weight:d.weight,recommendedSize:size,priorities:d.priorities,fit,set,experiences});
       const products=MyDiaper.domain.catalog.candidates(MyDiaper.productCatalog,{size,purpose:set.purpose,priorities:d.priorities,experiences,currentProductSizeId:set.productSizeId}).slice(0,3);
       body=`<div class="finder-result personalized">${art('elephant')}<span class="badge success">${ctx.esc(personal.confidenceLabel)}</span><h1>Größe ${ctx.esc(size)}</h1><p>bei ${String(d.weight).replace('.',',')} kg · ${ctx.esc(set.label)}</p>
         <section class="finder-group result-fit"><span class="result-symbol">${icon(fit.code==='check_night'?'clock':fit.code==='try_larger'?'arrow':'check')}</span><div><h3>${ctx.esc(fit.result)}</h3><p>${ctx.esc(fit.note)}</p></div></section>

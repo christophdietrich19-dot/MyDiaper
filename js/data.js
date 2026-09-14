@@ -1,5 +1,14 @@
 window.MyDiaper = window.MyDiaper || {};
 
+MyDiaper.profileColors = [
+  {id:'mint',label:'Mint'},
+  {id:'sage',label:'Salbei'},
+  {id:'sun',label:'Sonnengelb'},
+  {id:'lilac',label:'Lavendel'},
+  {id:'peach',label:'Apricot'},
+  {id:'blue',label:'Himmelblau'}
+];
+
 MyDiaper.catalog = {
   types: ['Windel', 'Pants', 'Nachtwindel', 'Schwimmwindel'],
   brands: [

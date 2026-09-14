@@ -15,22 +15,24 @@ Status: vorhanden
 - Capacitor-Vorbereitung
 
 ## Phase 1 — Prototyp stabilisieren
+Status: lokal abgeschlossen am 12.09.2026
+
 Ziel: sauberer lokaler MVP ohne Backend.
 
 ### Aufgaben
-Bereits umgesetzt (11.–12.09.2026): normalisierte kinder-/setgebundene lokale Daten, v1/v2→v3-Migration, getrennte Domain-Regeln, Fit-/Erfahrungs-/Produkt-/Größenverlauf, bedienbarer Erfahrungseditor, persönliche Finder-Signale, strukturierter Testkatalog, Demo-OfferProvider, lokale Preisalarme, kontrollierter Angebotsimport, versioniertes Familien-Backup, durchgängige Referenzgestaltung und automatisierte Kern-/Isolationstests. Diese Schritte führen keinen Framework-Wechsel ein und schließen Phase 1 noch nicht vollständig ab.
+Umgesetzt (11.–12.09.2026): normalisierte kinder-/setgebundene lokale Daten, v1/v2/v3→v4-Migration, getrennte Domain-Regeln, vollständige lokale Kinder-/Set-/Vorratspostenverwaltung, Fit-/Erfahrungs-/Produkt-/Größenverlauf, Finder-Signale, strukturierter Testkatalog, EAN-Prüfung und lokale Korrekturentwürfe, Demo-OfferProvider, Preisalarme, Angebotsimport, Familien-Backup, konfigurierbare Reminder, strukturierte Börsen-Demo, Accessibility-Basis, Referenzgestaltung und automatisierte Tests. Kein Framework-Wechsel.
 
 - Datenmodelle vereinheitlichen
-- Kinder anlegen/bearbeiten/löschen
+- Kinder anlegen/bearbeiten/archivieren/wiederherstellen/löschen — umgesetzt
 - mehrere aktive Windelsets pro Kind
-- Vorratsverwaltung vollständig CRUD-fähig
+- Vorratsverwaltung vollständig CRUD-fähig — umgesetzt
 - Fit-Check-Regeln in eigene Domain-Datei auslagern
 - Produktkatalog strukturieren — lokales Testmodell umgesetzt
 - Demo-Angebotsprovider kapseln — umgesetzt
-- Börsen-Demo strukturieren
-- Settings/Reminder vollständig
-- UI-Zustände: loading/empty/error
-- Accessibility-Basis
+- Börsen-Demo strukturieren — lokal umgesetzt; produktive Moderation bleibt Backend-Gate
+- Settings/Reminder vollständig — lokal umgesetzt; echte Push-Zustellung bleibt nativ/Backend
+- UI-Zustände: lokale Empty-/Fehlerzustände umgesetzt; Remote-Loading folgt mit echten Diensten
+- Accessibility-Basis — umgesetzt, Geräteprüfung bleibt Release-Schritt
 - Tests für Kernberechnungen
 
 ### Definition of Done
@@ -66,9 +68,9 @@ Bereits umgesetzt (11.–12.09.2026): normalisierte kinder-/setgebundene lokale 
 - Größen
 - Gewichtsbereiche
 - Packungsgrößen
-- EAN/Barcodes
+- EAN/Barcodes — Validierung/Lookup lokal umgesetzt; verifizierte Datenquelle offen
 - Adminpflege
-- Korrektur-/Meldeworkflow
+- Korrektur-/Meldeworkflow — lokaler Entwurf umgesetzt; Adminversand offen
 
 ## Phase 5 — Angebote
 - `OfferProvider`-Grundvertrag und Normalisierung — lokal umgesetzt
@@ -84,6 +86,7 @@ Bereits umgesetzt (11.–12.09.2026): normalisierte kinder-/setgebundene lokale 
 - optionale Affiliate-Kennzeichnung
 
 ## Phase 6 — Native Funktionen
+- Capacitor-Konfiguration, Capability-Grenze, Skripte und Anleitung — umgesetzt
 - Capacitor Android/iOS
 - Standort mit Permission + PLZ-Fallback
 - Barcode-Scanner
@@ -93,6 +96,7 @@ Bereits umgesetzt (11.–12.09.2026): normalisierte kinder-/setgebundene lokale 
 - Deep Links
 
 ## Phase 7 — Marketplace produktiv
+- lokaler CRUD-/Suche-/Chat-/Melde-/Blockier-Prototyp — umgesetzt
 - echte Listings
 - Listing-Fotos
 - Suche/Filter

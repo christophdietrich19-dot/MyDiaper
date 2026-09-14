@@ -1,6 +1,6 @@
 # MyDiaper — Store Release Checklist
 
-Stand: 11.09.2026. Store-Regeln ändern sich; vor Einreichung erneut gegen die aktuellen offiziellen Richtlinien prüfen.
+Stand: 12.09.2026. Store-Regeln ändern sich; vor Einreichung erneut gegen die aktuellen offiziellen Richtlinien prüfen. Die lokale Vorbereitung ist dokumentiert, die App ist damit noch nicht einreichungsfähig.
 
 ## 1. Positionierung
 MyDiaper wird als App für Eltern/Betreuungspersonen positioniert, nicht als Kinder-App. Kinder sind Gegenstand privater Profile, aber nicht die Zielnutzer der App.
@@ -91,7 +91,7 @@ Vor öffentlichem Release klären:
 
 ## 12. Technische Store-Checks
 ### Android
-- aktuelles Target SDK
+- aktuelles Target SDK: Für neue Apps/Updates verlangt Google Play ab 31.08.2026 Android 16 / API 36; unmittelbar vor dem Build erneut prüfen
 - signiertes AAB
 - adaptive Icons
 - Play Integrity/Abuse-Schutz bei Bedarf
@@ -119,3 +119,17 @@ Vor öffentlichem Release klären:
   https://support.google.com/googleplay/android-developer/answer/13327111
 - Google Play User Generated Content
   https://support.google.com/googleplay/android-developer/answer/9876937
+- Google Play Data Safety
+  https://support.google.com/googleplay/android-developer/answer/10787469
+- Google Play Target API
+  https://support.google.com/googleplay/android-developer/answer/11926878
+
+## 14. Lokale Release-Unterlagen
+
+- `PRIVACY_DATA_INVENTORY.md` — technische Dateninventur
+- `STORE_METADATA_DRAFT.md` — beschreibende Store-Texte und Review Notes
+- `OPERATOR_QUESTIONNAIRE.md` — fehlende Betreiber-/Finanz-/Rechtsentscheidungen
+- `NATIVE_READINESS.md` — Capacitor-/Plattformablauf
+- `MARKETPLACE_LOCAL_DEMO.md` — klare Abgrenzung zur produktiven UGC-Funktion
+
+`npm run release:check` prüft diese lokalen Voraussetzungen. `npm run release:check:store` bleibt rot, bis die externen Gates tatsächlich erfüllt sind.

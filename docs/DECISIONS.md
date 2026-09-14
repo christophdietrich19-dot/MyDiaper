@@ -180,6 +180,66 @@ Importierte Quellen liegen separat unter `mydiaper-offer-imports-v1`. Ein erneut
 
 Status: umgesetzt, 12.09.2026
 
-Vor einer Backend- und Auth-Entscheidung erhält die lokale Testversion Datenportabilität über den Umschlag `mydiaper-family-backup` Version 1. Er enthält den vollständigen Familienzustand des aktuellen Schemas v3 und einen Exportzeitpunkt. Beim Einlesen validiert die bestehende Modellgrenze sämtliche IDs, Eigentümerschaften, Produktreferenzen und Werte, bevor der Store den Zustand atomar ersetzt. Ein Browseradapter kapselt Datei-Lesen und -Download, damit UI und Domain keine direkten Plattformaufrufe vermischen.
+Vor einer Backend- und Auth-Entscheidung erhält die lokale Testversion Datenportabilität über den Umschlag `mydiaper-family-backup` Version 1. Er enthält den vollständigen Familienzustand des aktuellen Schemas und einen Exportzeitpunkt. Beim Einlesen validiert die bestehende Modellgrenze sämtliche IDs, Eigentümerschaften, Produktreferenzen und Werte, bevor der Store den Zustand atomar ersetzt. Ein Browseradapter kapselt Datei-Lesen und -Download, damit UI und Domain keine direkten Plattformaufrufe vermischen. Ältere Schema-v1-bis-v3-Backups werden beim Import auf v4 migriert.
+
+## ADR-028 — Schema v4 für vollständige lokale Verwaltung
+
+Status: umgesetzt, 12.09.2026
+
+Kinderarchivierung, einzelne Vorratsposten, Reminder-Konfiguration, lokale Börsensicherheit und Produktkorrekturentwürfe benötigen explizite Daten statt UI-Sonderfälle. Deshalb verwendet die App `schemaVersion: 4` und `mydiaper-v4-state`. v1, v2 und v3 werden einmalig migriert und nicht überschrieben. Archivieren ist der sichere Standard; endgültiges Löschen erfordert ein zuvor archiviertes Profil und entfernt abhängige Sets, Vorräte, Ereignisse, Checks, Erfahrungen, Verläufe und Preisalarme atomar.
+
+## ADR-029 — CRUD bleibt an Repository- und Besitzgrenzen
+
+Status: umgesetzt, 12.09.2026
+
+Kinder, Windelsets und Vorratsposten werden über das Familien-Repository verwaltet. Das letzte aktive Kind und das letzte aktive Set können nicht entfernt werden. Ein Setwechsel überträgt keine Bestände. Einzelne Lose validieren ursprüngliche und verbleibende Stückzahl sowie Kind-/Set-Zugehörigkeit. Die UI hält bei jedem Dialog die ursprünglichen IDs fest; Navigation und visuelle Grundstruktur bleiben unverändert.
+
+## ADR-030 — Börsen-Lifecycle vollständig lokal, nicht scheinproduktiv
+
+Status: umgesetzt, 12.09.2026
+
+`marketplace.js` und `marketplace-repository.js` kapseln Anzeigen, Suche, eigene Lifecycle-Aktionen, kontextbezogene Chats, lokale Meldungen und Blockierungen. Diese Funktionen erhöhen die Testbarkeit, behaupten aber keine öffentliche Moderation: Ohne Backend gibt es keine echten Identitäten, geräteübergreifende Inhalte, Moderationsqueue, Rate-Limits oder Löschdurchsetzung. Die Oberfläche und Dokumentation nennen diese Grenze ausdrücklich.
+
+## ADR-031 — Keine erfundenen Barcodes oder Gerätefähigkeiten
+
+Status: umgesetzt, 12.09.2026
+
+EAN/GTIN werden inklusive Prüfziffer validiert und ausschließlich gegen vorhandene, geprüfte Packungscodes aufgelöst. Der Demokatalog behält `barcodeEan: null`; unbekannte Codes erzeugen höchstens einen lokalen Korrekturentwurf. `platform/capabilities.js` meldet echte Capacitor-/Plugin-Verfügbarkeit. Manuelle Eingabe bleibt der Web-Fallback, und nicht installierte Scanner-, Kamera-, Standort- oder Push-Funktionen werden nicht vorgetäuscht.
+
+## ADR-032 — Backendfreie Release-Vorbereitung ist prüfbar, aber nicht Store-fertig
+
+Status: umgesetzt, 12.09.2026
+
+Accessibility-Basis, Capability-Status, Dateninventar, Metadatenentwurf, Betreiberfragebogen, Native-Anleitung und ein lokaler Release-Check werden jetzt versioniert. `npm run release:check` bestätigt die lokal prüfbaren Voraussetzungen und nennt externe Gates. `npm run release:check:store` schlägt absichtlich fehl, solange native Plattformprojekte, Betreiber-/Support-/Privacy-URLs, produktive Moderation, Kontolöschung, echte Datenquellen, Signierung und Store-Konten fehlen. Rechtstexte werden ohne Betreiberentscheidung nicht erfunden.
 
 Angebotsimporte sind bewusst nicht Teil des Familien-Backups: private Langzeitdaten und austauschbare Feed-/Importdaten haben getrennte Lebenszyklen. Das Backup enthält sensible Kinder- und Familiendaten und wird weder hochgeladen noch als Kontosynchronisation bezeichnet. Eine spätere Cloud-Repository-Implementierung kann dieselbe validierte Importgrenze verwenden, benötigt aber weiterhin Authentifizierung, serverseitige Rechteprüfung, Konfliktmodell und Löschkonzept.
+
+## ADR-033 — Gehärtete, dauerhaft signierte Android-Testverteilung
+
+Status: umgesetzt, 14.09.2026
+
+Die öffentlich leicht untersuchbare Debug-APK ist nicht das Verteilungsartefakt für Tester. `android:build:test-release` erzeugt deshalb einen echten Release-Build mit deaktivierter Debug-Fähigkeit, R8-/Ressourcen-Shrinking und einem eigenen RSA-4096-Schlüssel. Gradle erhält Pfad, Alias und Kennwörter ausschließlich über kurzlebige Umgebungsvariablen. Der Schlüssel und das mit Windows DPAPI verschlüsselte Kennwort liegen benutzergebunden unter `%LOCALAPPDATA%\MyDiaper\signing`, ausdrücklich außerhalb von Projekt und Git. Der Buildprozess prüft die fertige APK mit `apksigner`. Eine separate Debug-Paketkennung verhindert künftige Signaturkonflikte zwischen Entwicklungs- und Verteilungsbuilds.
+
+Der Android-App-Speicher ist von Cloud-Backup und Geräteübertragung ausgeschlossen. Klartext-Netzwerkverkehr ist deaktiviert; der FileProvider gibt nicht mehr pauschal den gesamten externen Speicher frei. Diese Härtung ersetzt keine anwendungsseitige Verschlüsselung und macht Clientcode nicht geheim: Die Capacitor-Webressourcen bleiben extrahierbar. Secrets dürfen weiterhin ausschließlich in einem späteren Backend liegen. Bis zum produktiven Datenschutz-, Speicher- und Gerätekonzept sollen Tester Demo- oder pseudonymisierte Familiendaten verwenden.
+
+Credits bleiben gemäß Produktvorgabe sichtbar. Nicht erforderliche persönliche Demoangaben wurden neutralisiert; die reale Paketkennung und die zur Laufzeit benötigte Bildreferenz sind naturgemäß im Artefakt sichtbar. Der Schlüssel muss separat gesichert werden, weil ohne ihn keine Update-APK über eine installierte Release-Testversion eingespielt werden kann. Ein Store-AAB, Storekonten und eine endgültige Upload-Key-Strategie bleiben eigene Release-Gates.
+
+## ADR-034 — Profilfarben und Babyillustration bleiben geschlechtsneutral
+
+Status: umgesetzt, 14.09.2026
+
+Die schlafende Babyillustration wird in Salbei-/Mint- und Cremetönen statt geschlechtlich codiertem Blau dargestellt. Zusätzlich besitzt jedes Kinderprofil eine frei wählbare Farbe aus einer festen, barrierearm beschrifteten Palette. Die Farbe steuert Avatar und Akzent der Heute-Karte, kommuniziert aber nie allein einen Status. Das Geschlecht wird weiterhin nicht erhoben. Vorhandene Profilfarben bleiben bei Migration und Bearbeitung erhalten; ungültige Farbwerte weist das Repository zurück.
+
+## ADR-035 — Alter ist Finder-Kontext, keine harte Nutzungsgrenze
+
+Status: umgesetzt, 14.09.2026
+
+`js/domain/age-bands.js` kapselt die Altersstufen und ihre Ableitung aus dem Geburtsdatum. Der Finder differenziert bis zum vierten Lebensjahr, bietet für Nachtwindeln zusätzlich vier bis sechs Jahre und danach eine offene Kategorie „6+ Jahre · individuell“. Das berücksichtigt längere Nacht- und individuelle Windelnutzung, ohne ältere Kinder auszuschließen. Die Altersangabe verändert weder gespeichertes Profil noch Größenempfehlung: Gewicht, Herstellerbereich und tatsächliche Passform bleiben dafür maßgeblich.
+
+## ADR-036 — Mobile Darstellungsfehler werden an der Ursache und mit Regressionstests behoben
+
+Status: umgesetzt, 14.09.2026
+
+Die Fehler aus dem Android-Test von Version 1.1.1 werden in Version 1.1.2 ohne Navigations- oder Designwechsel korrigiert. Das Babyasset besitzt echte Alpha-Transparenz und wird kleiner außerhalb des Textbereichs positioniert. Der Profilkopf reserviert Illustration und Text zwei getrennte Grid-Spalten, damit der Elefant auch bei 320 Pixel Breite keine Beschreibung überdeckt. Profilkarten verwenden `minmax(0,1fr)` plus eine explizite zweispaltige Aktionsgruppe; innere Texte dürfen schrumpfen und überbreite Inhalte erzeugen keinen horizontalen Viewport.
+
+Für Systemleisten verwendet Capacitor 8 ausdrücklich `SystemBars.insetsHandling = css`. Die injizierten `--safe-area-inset-*`-Werte werden mit CSS-`env()` als Web-/PWA-Fallback in gemeinsame App-Variablen überführt. Bottom-Navigation, Seitenabstand und Finder-Footer verwenden dieselben Werte. Die Toggle-Komponente besitzt feste Maße; ihr Punkt wird mit `top: 50%` und einer gemeinsamen Translation vertikal und horizontal zentriert. `mobile-ui-regressions.test.js` schützt Alpha-Kanal, Profilgeometrie, Insets-Verkabelung und Toggle-Maße vor Rückfällen.

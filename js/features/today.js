@@ -1,16 +1,16 @@
 (function(){
   MyDiaper.features=MyDiaper.features || {};
   MyDiaper.features.today=function(ctx){
-    const c=ctx.activeChild(), {icon,art,rainbow}=ctx;
+    const c=ctx.activeChild(), {icon,art,rainbow}=ctx,state=MyDiaper.store.get(),stockDue=MyDiaper.domain.reminders.stockDue(c.days,state.settings.reminders.stock,state.settings.reminderConfig);
     const dayStart=new Date();dayStart.setHours(0,0,0,0);
     const used=MyDiaper.store.get().usageEvents.filter(e=>e.childId===c.id && new Date(e.usedAt)>=dayStart).reduce((sum,e)=>sum+e.quantity,0);
     return `<div class="today-screen">
       <header class="greeting"><div><h1>Hallo Mama! <span class="wave">👋</span></h1><p>Schön, dass du da bist.</p></div><button class="baby-avatar" data-action="family-picker" aria-label="Kinderprofil wechseln: ${ctx.esc(c.name)}">${art('babyPhoto')}<span class="child-indicator">${ctx.esc(c.name.slice(0,1))}</span></button></header>
-      <section class="today-hero" aria-label="Heute"><div class="hero-copy"><h2>Heute</h2><p>Alles im Blick für einen<br>entspannten Tag.</p></div><div class="hero-sun">${icon('sun')}</div><div class="hero-cloud"></div><img class="sleeping-baby" src="assets/images/sleeping-baby.png" alt="Schlafendes Baby mit einem Kuschelhäschen"></section>
+      <section class="today-hero theme-${ctx.esc(c.color)}" aria-label="Heute"><div class="hero-copy"><h2>Heute</h2><p>Alles im Blick für einen<br>entspannten Tag.</p></div><div class="hero-sun">${icon('sun')}</div><div class="hero-cloud"></div><img class="sleeping-baby" src="assets/images/sleeping-baby.png" alt="Schlafendes Baby in neutraler salbei-mintfarbener Kleidung mit einem Kuschelhäschen"></section>
       <section class="today-stats" aria-label="Übersicht für ${ctx.esc(c.name)}">
         <button class="stat-card blue" data-action="route" data-route="diapers">${icon('diaper')}<span><strong>${used}</strong><small>Windeln heute</small></span></button>
         <button class="stat-card lilac" data-action="edit-stock">${icon('clock')}<span><strong>${c.stock}</strong><small>Windeln im Vorrat<br>(ca. ${ctx.daysText(c)} Tage)</small></span></button>
-        <button class="stat-card mint" data-action="notifications">${icon('heart','filled')}<span><strong>${c.lowStock?'Bald nachkaufen':'Alles gut!'} <span class="tiny-heart">♥</span></strong><small>${c.lowStock?'Dein Vorrat wird langsam knapp.':'Dein Vorrat ist im grünen Bereich.'}</small></span></button>
+        <button class="stat-card mint" data-action="notifications">${icon('heart','filled')}<span><strong>${stockDue?'Bald nachkaufen':'Alles gut!'} <span class="tiny-heart">♥</span></strong><small>${stockDue?'Dein Vorrat wird langsam knapp.':'Dein Vorrat ist im grünen Bereich.'}</small></span></button>
         <button class="stat-card lavender" data-action="route" data-route="diapers">${icon('calendar')}<span><small>Nächster Einkauf<br>in ca. ${ctx.daysText(c)} Tagen</small></span></button>
       </section>
       <div class="quote-card"><p>„Kleine Windeln<br>für eine große Zukunft.“</p>${rainbow()}</div>

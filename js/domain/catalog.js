@@ -29,6 +29,10 @@
     if(!product)return null;
     return [...index.sizes.values()].find(item=>item.productId===product.id&&clean(item.label)===clean(size))||null;
   }
+  function packageDetails(catalog,packageId){
+    const index=createIndex(catalog),pack=index.packages.get(packageId);if(!pack)return null;
+    const productSize=details(catalog,pack.productSizeId);return productSize?{...productSize,pack}:null;
+  }
   function compatible(product,purpose){
     if(purpose==='swim')return product.category==='swim';
     if(purpose==='pants')return product.category==='pants';
@@ -57,6 +61,6 @@
   }
   function labelForCategory(category){return categoryLabels[category]||categoryLabels.custom;}
 
-  domain.catalog={createIndex,details,findProductSize,candidates,labelForCategory,compatible};
+  domain.catalog={createIndex,details,packageDetails,findProductSize,candidates,labelForCategory,compatible};
   if(typeof module!=='undefined'&&module.exports)module.exports=domain.catalog;
 })(globalThis);

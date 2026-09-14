@@ -2,22 +2,25 @@
 
 Die folgenden Modelle sind Zielmodelle. Feldnamen können technisch angepasst werden, Beziehungen und Verantwortlichkeiten sollten erhalten bleiben.
 
-## Implementiertes lokales Schema v3
+## Implementiertes lokales Schema v4
 
-Speicherschlüssel: `mydiaper-v3-state`. Alle IDs sind stabile Strings; neue IDs werden clientseitig erzeugt. `mydiaper-v1-state` und `mydiaper-v2-state` werden einmalig migriert und bleiben unverändert als Sicherung erhalten. Die folgenden Sammlungen sind bereits lokal umgesetzt; die relationalen Zielmodelle weiter unten bleiben die Planung für das spätere Backend.
+Speicherschlüssel: `mydiaper-v4-state`. Alle IDs sind stabile Strings; neue IDs werden clientseitig erzeugt. `mydiaper-v1-state`, `mydiaper-v2-state` und `mydiaper-v3-state` werden einmalig migriert und bleiben unverändert als Sicherung erhalten. Die folgenden Sammlungen sind bereits lokal umgesetzt; die relationalen Zielmodelle weiter unten bleiben die Planung für das spätere Backend.
 
 | Sammlung | Identität / Beziehung | Weitere wesentliche Felder |
 |---|---|---|
-| `children` | `id` | `name`, `birthdate`, `weight`, `height`, `color` |
+| `children` | `id` | `name`, `birthdate`, `weight`, `height`, `color`, optional `archivedAt` |
 | `diaperSets` | `id`, `childId` | `label`, `purpose`, `brand`, `line`, `size`, `productSizeId`, `dailyUse`, `active`, `isPrimary` |
-| `inventoryLots` | `id`, `childId`, **`setId` (Pflicht)** | `initialUnits`, `remainingUnits`, `productSizeId`, `source`, `createdAt` bei neuen Losen |
+| `inventoryLots` | `id`, `childId`, **`setId` (Pflicht)** | `initialUnits`, `remainingUnits`, `productSizeId`, `source`, `note`, `acquiredAt`, Zeitstempel |
 | `usageEvents` | `id`, `childId`, `setId` | `quantity`, `source`, `usedAt` |
 | `fitChecks` | `id`, `childId`, `setId` | `answers`, `code`, `result`, `note`, `score`, `recommendation`, `weightKgSnapshot`, `productSnapshot`, `createdAt` |
 | `productExperiences` | `id`, `childId`, `setId` | `productSizeId`, `productSnapshot`, optionale Bewertungen, `sizeTendency`, `avoidRecommendation`, `notes`, Zeitstempel |
 | `sizeHistory` | `id`, `childId`, `setId` | vorherige/neue Größe und Produktgröße, Produktsnapshots, `reason`, `createdAt` |
 | `priceAlerts` | `id`, `childId`, optional `setId` | `productSizeId`, `maxUnitPrice`, `scope`, `enabled`, Zeitstempel |
+| `market` | `id`, `ownerId` | Art, Titel, Zustand, Stückzahl, Preistext, Übergabe, Region, Lifecycle-Status |
+| `marketReports` / `marketBlocks` | `id` | lokale Melde- und Blockierentwürfe |
+| `catalogCorrections` | `id` | EAN/GTIN, Grund, Notiz, Status `local-draft` |
 
-`schemaVersion: 3` kennzeichnet den Zustand. `activeChildId` bleibt erhalten. `settings`, `market` und `chats` bleiben bewusst auf Familien-/Demo-Ebene. Es gibt weiterhin keinen Accountzwang, Cloud-Sync oder echten Produktdatenanbieter.
+`schemaVersion: 4` kennzeichnet den Zustand. `activeChildId` verweist immer auf ein nicht archiviertes Kind. `settings`, `market` und `chats` bleiben bewusst auf Familien-/Demo-Ebene. Es gibt weiterhin keinen Accountzwang, Cloud-Sync oder echten Produktdatenanbieter.
 
 Bestände liegen ausschließlich in `inventoryLots`. Die UI-Felder `stock`, `days`, `currentSize` usw. werden abgeleitet und nicht zusätzlich in Kinderprofilen gespeichert. Jeder Bestand benötigt sowohl Kind als auch Set; die Set-Zugehörigkeit wird vor dem Speichern geprüft. Fit-Checks und Erfahrungen können im Modell auch ohne Set-Referenz existieren, bleiben aber immer einem Kind zugeordnet; die aktuellen Repository-Schreibmethoden arbeiten mit einem konkreten Set.
 
@@ -31,6 +34,9 @@ repository.createSet(childId, {
   size: '4', dailyUse: 1, stock: 20
 });
 repository.addStock(childId, setId, 30);
+repository.listLots(childId, setId);
+repository.updateLot(childId, setId, lotId, { remainingUnits: 12 });
+repository.removeLot(childId, setId, lotId);
 repository.consumeStock(childId, setId, 1);
 repository.updateSet(childId, setId, { stock: 18, dailyUse: 1 });
 repository.saveFitCheck(childId, setId, {
@@ -43,6 +49,8 @@ repository.assignProduct(childId, setId, 'size-pampers-baby-dry-4');
 repository.listFitChecks(childId, setId);
 repository.listExperiences(childId);
 repository.listSizeHistory(childId, setId);
+repository.archiveChild(childId);
+repository.restoreChild(childId);
 
 const offerRepository = MyDiaper.offerRepository;
 offerRepository.saveAlert(childId, {

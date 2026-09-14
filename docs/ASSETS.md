@@ -1,6 +1,6 @@
 # MyDiaper — Gestaltung und Asset-Herkunft
 
-Stand: 11.09.2026. Diese Dateien gehören zur lokalen internen Testversion.
+Stand: 14.09.2026. Diese Dateien gehören zur lokalen internen Testversion.
 
 ## Gelieferte Bildreferenz
 
@@ -8,6 +8,7 @@ Stand: 11.09.2026. Diese Dateien gehören zur lokalen internen Testversion.
 - Projektdatei: `assets/images/design-reference.png` (unveränderte Kopie).
 - Verwendung: SVG-Viewports in `js/ui/visuals.js` zeigen das Beispielprofilbild, Wortlogo, Produktabbildungen, dm-Logo und die Beispielkarte. Es handelt sich nicht um eine neu bezogene Händlerkarte oder echte Produktfotos aus einem Feed.
 - Die Vorlage ist eine perspektivische Werbevisualisierung, kein Satz originaler Figma-/SVG-Komponenten. Schriften, responsive Maße und freigestellte Illustrationen sind Annäherungen; eine nachgewiesene Pixelidentität wird nicht behauptet.
+- Weil mehrere UI-Ausschnitte zur Laufzeit direkt aus `design-reference.png` angezeigt werden, ist derzeit auch die vollständige Referenzdatei im Web- und APK-Build enthalten und technisch extrahierbar. Sie enthält keine Familiendaten, muss vor einer öffentlichen Veröffentlichung aber durch rechtlich freigegebene Produktionsassets ersetzt werden.
 - Vor Veröffentlichung müssen Rechte an Referenz-, Personen-, Marken-, Produkt- und Kartendarstellungen sowie erforderliche Attributionen geklärt bzw. die Beispiele durch freigegebene Produktionsassets ersetzt werden. Das Nutzerbild stellt keine pauschale Veröffentlichungslizenz dar.
 
 ## Generierte Projektillustrationen
@@ -16,9 +17,15 @@ Modus: eingebautes ImageGen-Werkzeug, keine CLI/API-Fallbacks. Beide Ausgaben wu
 
 ### `assets/images/sleeping-baby.png`
 
-Transparente Illustration für die Heute-Karte, erzeugt aus der gelieferten Referenz. Finaler Prompt:
+Transparente Illustration für die Heute-Karte, zunächst aus der gelieferten Referenz extrahiert und am 14.09.2026 geschlechtsneutral überarbeitet. Der bestehende Charakter, die Pose, der Hase und die Komposition blieben erhalten; ausschließlich die blaue Kleidung wechselte zu Salbei/Mint und Creme. Finaler Farbbearbeitungsprompt:
 
-> Use case: background-extraction. Input image 1 is the exact visual reference for the MyDiaper app. Extract and faithfully reconstruct ONLY the sleeping baby illustration seen in the first (left) phone's mint 'Heute' card. The peach-skinned sleeping baby lies with its head on the RIGHT, tiny brown hair curl, closed eyes, rosy cheeks, light blue clothing and lavender/blue pillow, cuddling a small upright white bunny with pink ears at the LEFT of the baby's face. Keep the exact gentle flat pastel watercolor/vector illustration style, proportions, pose and colors from the reference. Include the soft mint and light-blue oval cushion directly under the baby. Output one isolated clean illustration asset on a genuinely transparent background, no card, no UI, no text, no phones, no sun, no other content. Fill a landscape 3:2 canvas with the illustration and minimal transparent padding. Intended use is the bottom-right illustration of the existing mobile card; no redesign.
+> Use case: precise-object-edit. Asset type: transparent in-app illustration for the MyDiaper Today card. Input image: Image 1 is the exact edit target. Primary request: Change only the baby's blue clothing to a clearly gender-neutral soft sage-mint and warm cream color palette. Keep the palette gentle, calm, family-friendly and consistent with the existing MyDiaper pastel watercolor/vector style. Constraints: Preserve the baby's identity, skin tone, face, expression, hair curl, pose, hands, body proportions, bunny, pillow, mint cushion, lighting, soft shading, composition, exact landscape framing, and genuinely transparent background. Keep all edges clean. No redesign and no new objects. Avoid: blue or pink gender-coded clothing, text, logos, watermark, background, extra decorations.
+
+Das Android-Fehlerprotokoll 1.1.1 zeigte anschließend, dass das sichtbare Schachbrett nicht Transparenz darstellte, sondern als RGB-Hintergrund in die Datei eingebrannt war. Zwei erneute Bearbeitungen im eingebauten ImageGen-Modus wurden technisch geprüft, enthielten aber weiterhin keinen Alpha-Kanal und wurden deshalb nicht übernommen. Der zuletzt verwendete Transparenzprompt lautete:
+
+> Use case: background-extraction. Asset type: production PNG cutout for an app card. Input images: Image 1 is the exact edit target. Primary request: The gray checkerboard in Image 1 is unwanted, baked-in background pixels. Delete that entire checkerboard background. Return the foreground illustration only on true transparency. Required output: RGBA PNG with a real alpha channel. Every canvas corner and every area outside the baby, bunny, pillow and mint cushion must have alpha 0. The checkerboard must not appear as visible artwork or RGB background pixels. Foreground invariants: Preserve the exact baby, facial features, sage-mint and cream clothes, bunny, pillow, cushion, pose, scale, lighting, shadows, composition and landscape canvas. Do not repaint, restyle, crop or move any foreground element. Edge quality: clean anti-aliased cutout with no gray fringe or checkerboard remnants. Avoid: simulated transparency grid, gray/white/colored background, backdrop texture, halos, new objects, text, logo, watermark.
+
+Die finale Projektdatei wurde daher ohne generatives Neuzeichnen technisch freigestellt: Eine kantenverbundene Maske entfernte ausschließlich die niedrig gesättigten Schachbrettpixel und schrieb echte transparente Alpha-Werte. Ein automatisierter Test prüft RGBA-Farbtyp, transparente Eckpixel sowie einen ausreichenden Transparenzanteil. Das Motiv wurde zusätzlich auf dem tatsächlichen mintfarbenen Kartenhintergrund visuell kontrolliert.
 
 ### `assets/images/elephant.png`
 

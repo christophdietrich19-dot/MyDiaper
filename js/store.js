@@ -12,4 +12,6 @@ window.MyDiaper = window.MyDiaper || {};
   MyDiaper.offerService=MyDiaper.services.offers.createOfferService({providers:[provider],catalog:MyDiaper.productCatalog,
     additionalProviders:()=>MyDiaper.offerImportRepository.snapshots().map(MyDiaper.services.offers.importedProvider)});
   MyDiaper.offerRepository=MyDiaper.repositories.createOfferRepository(MyDiaper.store,MyDiaper.productCatalog);
+  MyDiaper.marketplaceRepository=MyDiaper.repositories.createMarketplaceRepository(MyDiaper.store);
+  MyDiaper.catalogCorrectionRepository=MyDiaper.repositories.createCatalogCorrectionRepository(MyDiaper.store,MyDiaper.productCatalog);
 })();

@@ -24,8 +24,8 @@
     try{value=JSON.parse(input);}catch(error){throw new Error('Das Familien-Backup ist kein gültiges JSON.');}
     if(!value||value.format!==FORMAT||value.version!==VERSION)throw new Error('Unbekanntes Backupformat oder nicht unterstützte Version.');
     validDate(value.exportedAt);
-    if(!value.state||value.state.schemaVersion!==3)throw new Error('Das Backup enthält keine unterstützte MyDiaper-Datenversion.');
-    return {format:FORMAT,version:VERSION,exportedAt:value.exportedAt,state:domain.model.assertState(domain.model.clone(value.state))};
+    if(!value.state||![1,2,3,4].includes(value.state.schemaVersion))throw new Error('Das Backup enthält keine unterstützte MyDiaper-Datenversion.');
+    return {format:FORMAT,version:VERSION,exportedAt:value.exportedAt,state:domain.model.migrate(domain.model.clone(value.state),app.legacyDefaults)};
   }
   domain.backup={create,serialize,parse,FORMAT,VERSION,MAX_CHARS};
   if(typeof module!=='undefined'&&module.exports)module.exports=domain.backup;

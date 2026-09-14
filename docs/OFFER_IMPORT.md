@@ -21,7 +21,7 @@ In der App: **Angebote → Eigene Angebote importieren**. Eine `.json`-Datei kan
       "externalId": "angebot-001",
       "scope": "local",
       "store": "Händlername",
-      "city": "Hoyerswerda",
+      "city": "Berlin",
       "distance": 1.8,
       "productPackageId": "package-pampers-babydry-4-74",
       "price": 14.49,

@@ -64,6 +64,7 @@ Pflicht/Grunddaten:
 Optional:
 - Profilbild oder Avatar
 - Geschlecht nur wenn wirklich benötigt; sonst weglassen
+- frei wählbare, nicht an ein Geschlecht gekoppelte Profilfarbe
 - aktuelle Windelmarke
 - Produktlinie
 - aktuelle Größe
@@ -106,7 +107,7 @@ Zwei Ebenen:
 **Schnelle Empfehlung**
 - basiert primär auf Gewicht
 - berücksichtigt Hersteller-Größenbereiche
-- Alter/Größe als Kontext
+- Alter/Größe als Kontext; Auswahl detailliert bis vier Jahre, für Nachtwindeln zusätzlich bis sechs Jahre und ohne feste Nutzungsobergrenze
 - Ergebnis nie als absolute Wahrheit darstellen
 
 **Detaillierter Fit-Check**
