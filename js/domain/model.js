@@ -21,7 +21,7 @@
   }
 
   function assertState(state){
-    if(!state||state.schemaVersion!==4)throw new Error('Unbekannte Datenversion.');
+    if(!state||state.schemaVersion!==5)throw new Error('Unbekannte Datenversion.');
     const names=['children','diaperSets','inventoryLots','fitChecks','productExperiences','usageEvents','sizeHistory','priceAlerts','market','marketReports','marketBlocks','catalogCorrections'];
     names.forEach(name=>recordIds(state,name));
     const childIds=new Set(state.children.map(child=>child.id)),activeChildren=state.children.filter(child=>!child.archivedAt);
@@ -53,8 +53,10 @@
       if(lot.note!=null&&typeof lot.note!=='string')throw new Error('Ungültige Vorratsnotiz.');
       if(lot.acquiredAt!=null&&Number.isNaN(new Date(lot.acquiredAt).getTime()))throw new Error('Ungültiges Kaufdatum im Vorrat.');
       if(lot.updatedAt!=null&&Number.isNaN(new Date(lot.updatedAt).getTime()))throw new Error('Ungültiges Änderungsdatum im Vorrat.');
+      if(typeof lot.storageLocation!=='string'||!lot.storageLocation.trim()||lot.storageLocation.length>80)throw new Error('Ungültiger Lagerort im Vorrat.');
+      if(lot.productSnapshot!=null&&(typeof lot.productSnapshot!=='object'||typeof lot.productSnapshot.brand!=='string'||typeof lot.productSnapshot.line!=='string'||typeof lot.productSnapshot.size!=='string'))throw new Error('Ungültiger Produktschnappschuss im Vorrat.');
     }
-    for(const event of state.usageEvents)domain.inventory.units(event.quantity);
+    for(const event of state.usageEvents)domain.activity.normalize(event);
     for(const experience of state.productExperiences)domain.personalization.normalizeExperience(experience);
     for(const entry of state.sizeHistory){
       if(typeof entry.toSize!=='string'||!entry.toSize.trim()||(entry.fromSize!=null&&typeof entry.fromSize!=='string'))throw new Error('Ungültiger Größenverlauf.');
@@ -69,6 +71,8 @@
     if(!state.settings||!state.settings.reminders)throw new Error('Erinnerungseinstellungen fehlen.');
     for(const key of ['stock','size','offers','market'])if(typeof state.settings.reminders[key]!=='boolean')throw new Error('Ungültige Erinnerungseinstellung.');
     domain.reminders.normalize(state.settings.reminderConfig);
+    const salutation=state.settings.salutation;
+    if(!salutation||!['mama','papa','parent','custom','none'].includes(salutation.choice)||typeof salutation.completed!=='boolean'||typeof salutation.customName!=='string'||salutation.customName.length>60)throw new Error('Ungültige Begrüßungseinstellung.');
     const listingIds=new Set(state.market.map(item=>{domain.marketplace.listing(item);return item.id;}));
     if(!state.chats||typeof state.chats!=='object'||Array.isArray(state.chats))throw new Error('Ungültige Marktplatz-Chats.');
     for(const [listingId,messages] of Object.entries(state.chats)){
@@ -81,6 +85,17 @@
       if(!domain.barcodes.valid(correction.barcode)||!['unknown_barcode','wrong_assignment','wrong_pack_size','other'].includes(correction.kind)||typeof correction.note!=='string'||correction.note.length<3)throw new Error('Ungültiger Korrekturentwurf.');
       if(correction.packageId&&!app.productCatalog.packages.some(pack=>pack.id===correction.packageId))throw new Error('Korrektur verweist auf eine unbekannte Produktpackung.');
     }
+    return state;
+  }
+
+  function upgradeV4(input){
+    const state={...clone(input),schemaVersion:5};
+    state.settings=state.settings||{};
+    state.settings.salutation={choice:'parent',customName:'',completed:false,...(state.settings.salutation||{})};
+    state.inventoryLots=(state.inventoryLots||[]).map(lot=>{const set=state.diaperSets?.find(item=>item.id===lot.setId&&item.childId===lot.childId),productSnapshot=lot.productSnapshot||{brand:String(set?.brand||''),line:String(set?.line||''),size:String(set?.size||'')},productLabel=[productSnapshot.brand,productSnapshot.line,productSnapshot.size&&`Größe ${productSnapshot.size}`].filter(Boolean).join(' · ');return {...lot,storageLocation:String(lot.storageLocation||'Zuhause').trim().slice(0,80)||'Zuhause',productSnapshot,note:lot.note||(!lot.productSizeId?productLabel:'')};});
+    state.usageEvents=(state.usageEvents||[]).map(event=>({...event,contents:event.contents||'unknown',note:String(event.note||'').trim().slice(0,240),lotConsumptions:Array.isArray(event.lotConsumptions)?event.lotConsumptions:[]}));
+    state.productExperiences=(state.productExperiences||[]).map(item=>({...item,wouldBuyAgain:item.wouldBuyAgain??null}));
+    state.priceAlerts=(state.priceAlerts||[]).map(alert=>({...alert,productPackageId:alert.productPackageId??null,maxPackPrice:alert.maxPackPrice??null}));
     return state;
   }
 
@@ -128,12 +143,13 @@
     return state;
   }
   function migrate(input,defaults){
-    if(input&&input.schemaVersion===4)return assertState(clone(input));
-    if(input&&input.schemaVersion===3)return assertState(upgradeV3(input));
-    if(input&&input.schemaVersion===2)return assertState(upgradeV3(upgradeV2(input)));
+    if(input&&input.schemaVersion===5)return assertState(clone(input));
+    if(input&&input.schemaVersion===4)return assertState(upgradeV4(input));
+    if(input&&input.schemaVersion===3)return assertState(upgradeV4(upgradeV3(input)));
+    if(input&&input.schemaVersion===2)return assertState(upgradeV4(upgradeV3(upgradeV2(input))));
     if(input&&input.schemaVersion!=null&&input.schemaVersion!==1)throw new Error('Diese Datenversion wird noch nicht unterstützt.');
-    return assertState(upgradeV3(upgradeV2(legacyV2(input,defaults))));
+    return assertState(upgradeV4(upgradeV3(upgradeV2(legacyV2(input,defaults)))));
   }
-  domain.model={clone,id,purpose,labels,assertState,migrate,upgradeV2,upgradeV3};
+  domain.model={clone,id,purpose,labels,assertState,migrate,upgradeV2,upgradeV3,upgradeV4};
   if(typeof module!=='undefined'&&module.exports)module.exports=domain.model;
 })(globalThis);

@@ -17,7 +17,12 @@ MyDiaper.catalog = {
     { name: 'Babydream', lines: ['Premium', 'Pants'] },
     { name: 'Lupilu', lines: ['Soft & Dry', 'Pants'] },
     { name: 'HiPP', lines: ['Babysanft'] },
-    { name: 'Lillydoo', lines: ['Green', 'Pants'] }
+    { name: 'Lillydoo', lines: ['Green', 'Pants'] },
+    { name: 'Rascals', lines: ['Premium Windeln', 'Premium BabyPants'] },
+    { name: 'Moltex', lines: ['Pure & Nature'] },
+    { name: 'Naty', lines: ['Eco Windeln'] },
+    { name: 'Huggies', lines: ['Little Swimmers'] },
+    { name: 'Molfix', lines: ['ComfortFix', 'Pants'] }
   ],
   sizeGuide: [
     { size:'0', min:1.5, max:2.5 }, { size:'1', min:2, max:5 }, { size:'2', min:4, max:8 },

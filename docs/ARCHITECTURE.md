@@ -24,16 +24,17 @@ index.html (klassische Skripte)
   js/domain/
     catalog.js                      Katalogvalidierung und Produktvergleich
     offers.js                       Angebotsnormalisierung, Aktualität, Alarmvergleich
+    activity.js                     Windelwechsel, Inhaltswerte und Tages-/Wochenaggregation
     pricing.js                      Stückpreis, Preisvergleich
     age-bands.js                    Alterskontext bis vier, nachts bis sechs, danach offen
     sizes.js                        Gewichts-Richtwert
     fit-check.js                    Fit-Regeln, Ergebniscodes
     personalization.js             validierte Erfahrungen, erklärbare Signale
-    inventory.js                    Bestand, FIFO, Reichweite
+    inventory.js                    Bestand, Lagerorte, FIFO, Rückgabe, Reichweite
     reminders.js                    validierte Schwellen und Ruhezeiten
     barcodes.js                     GTIN-Prüfung und Korrekturentwürfe
     marketplace.js                  lokale Listing-/Chat-/Safety-Regeln
-    model.js                        Schema v4, Migration, Referenzprüfung
+    model.js                        Schema v5, Migration, Referenzprüfung
     backup.js                       versioniertes Familien-Backupformat
   js/storage/
     defaults.js                     ursprüngliche Demo als Migrationseingang
@@ -50,9 +51,13 @@ index.html (klassische Skripte)
   js/store.js                       Zusammensetzen von Store und Repository
   js/platform/browser-files.js      lokaler Dateiimport/-download im Web
   js/platform/capabilities.js       Web-/Capacitor-Fähigkeiten ohne Direktzugriffe im UI
+  js/platform/location.js           einmalige Web-/Capacitor-Standortabfrage
+  js/platform/navigation.js         Android-Zurück und kontrolliertes Beenden
   js/ui/family-context.js            Set-Auswahl, UI-Projektion
   js/ui/visuals.js                   Symbole, Referenzgrafiken
   js/ui/offer-visuals.js              Angebotsdarstellung, Referenz-Demos
+  js/ui/product-fields.js            strukturierter Produktpicker mit manueller Alternative
+  js/ui/offer-map.js                 Leaflet-/OpenStreetMap-Adapter und Demo-Marker
   js/features/*                     Bereichstemplates einschließlich Finder
   js/app.js                         Navigation, Formulare, Event-Handling
 css/reference.css                   ausdrücklich beauftragte Bildvorlagen-Styles
@@ -62,7 +67,7 @@ docs/                               Spezifikation und Entscheidungen
 www/                                generierter Web-/Capacitor-Build
 ```
 
-Datenfluss Familie: Formular mit festen Kind-/Set-IDs → Repository → Domain-Regeln → validierte Speichertransaktion → UI-Projektion → bestehendes Template. Datenfluss Angebote: Demo-Provider plus separat persistierte Import-Provider → Normalisierung gegen den Produktkatalog → Suche/Sortierung/Aktualitätsstatus → Angebots-UI; Preisalarme laufen getrennt über das lokale OfferRepository. Datenportabilität: Familienzustand → versionierter Backup-Umschlag → Browser-Dateiadapter; beim Einlesen führt derselbe Modellvalidator vor dem atomaren Ersetzen sämtliche Besitz- und Referenzprüfungen aus. Die Börse besitzt jetzt ebenfalls Domain- und Repository-Grenzen, bleibt ohne Backend aber eine rein lokale Demo. Der spätere Zielbaum unten ist weiterhin eine Roadmap, nicht bereits vollständig implementierte Infrastruktur.
+Datenfluss Familie: Formular mit festen Kind-/Set-IDs → Repository → Domain-Regeln → validierte Speichertransaktion → UI-Projektion → bestehendes Template. Windelwechsel verwenden `activity.js`; `inventory.js` liefert die genaue FIFO-Losentnahme und die Information für eine verlustfreie Rückgabe. Datenfluss Angebote: Demo-Provider plus separat persistierte Import-Provider → Normalisierung gegen den Produktkatalog → Suche/Sortierung/Aktualitätsstatus → Angebots-UI; Preisalarme laufen getrennt über das lokale OfferRepository. Die Karte ist ein UI-Adapter: echte OSM-Kacheln, aber weiterhin ausdrücklich Demo-Marker. Standort und Android-Zurück werden ausschließlich über Plattformmodule aufgerufen. Datenportabilität: Familienzustand → versionierter Backup-Umschlag → Browser-Dateiadapter; beim Einlesen führt derselbe Modellvalidator vor dem atomaren Ersetzen sämtliche Besitz- und Referenzprüfungen aus. Die Börse bleibt ohne Backend eine rein lokale Demo.
 
 Der Finder hält nur flüchtige UI-Entwürfe pro Kind und ruft Alters-, Größen-, Fit-, Personalisierungs- und Katalog-Domain-Module auf; er schreibt keine Profilwerte implizit zurück. Altersstufen werden aus dem Geburtsdatum abgeleitet oder im Finder gewählt, beeinflussen die Größenregel aber nicht. Der Erfahrungseditor schreibt über das Familien-Repository mit festen Kind-/Set-IDs. Produkt- und Größenwechsel erhalten einen setbezogenen Verlauf. Visuelle Helfer und Templates dürfen die Eigentümerschaftsprüfung im Repository nicht umgehen. Der aktive Provider liefert deutlich markierte Demo-Datensätze, keinen externen Live-Feed. Details und Grenzen: ADR-017 bis ADR-035 und `ASSETS.md`.
 
@@ -242,7 +247,7 @@ Normalisierung in ein internes `Offer`-Modell.
 
 `js/services/offer-provider.js` stellt den synchronen Provider-Vertrag für die direkt startbare Testversion bereit. Der aktive statische Provider liefert ausschließlich gekennzeichnete Demo-Daten. `js/domain/offers.js` normalisiert Produkt-/Packungsreferenzen, Quelle, Bereich, Preise, Versand, Prüf- und Gültigkeitsdaten. Ein späterer Partnerfeed ersetzt oder ergänzt den Provider, ohne die Feature-Templates an seine Rohstruktur zu koppeln.
 
-Die Aktualitätsanzeige ist bereits implementiert. Sie zeigt fehlende Prüfzeitpunkte ehrlich als unverifiziert bzw. Demo an und kann kontrollierte Importdaten als frisch, älter, veraltet oder abgelaufen kennzeichnen. Lokale Preisalarme vergleichen exakt dieselbe `productSizeId` und den ungerundeten Stückpreis. Echte Push-Benachrichtigungen bleiben eine spätere Service-/Plattformaufgabe.
+Die Aktualitätsanzeige ist bereits implementiert. Sie zeigt fehlende Prüfzeitpunkte ehrlich als unverifiziert bzw. Demo an und kann kontrollierte Importdaten als frisch, älter, veraltet oder abgelaufen kennzeichnen. Lokale Preisalarme vergleichen exakt dieselbe `productSizeId`; Stückpreisgrenzen verwenden den ungerundeten Wert, Packungspreisgrenzen zusätzlich exakt dieselbe `productPackageId`. Echte Push-Benachrichtigungen bleiben eine spätere Service-/Plattformaufgabe.
 
 Eigene kontrollierte JSON-Quellen können inzwischen über UI oder Repository eingelesen werden. Domain-Regeln begrenzen Größe und Datensatzanzahl, erzwingen eindeutige Quell-/Angebots-IDs, bekannte Katalogpackungen, EUR und HTTPS für optionale Links. Ein separater localStorage-Adapter schützt beschädigte Importdaten und hält sie aus dem Familienzustand heraus. `createOfferService` fragt zusätzliche Provider dynamisch ab; ein Import ist dadurch sofort such- und preisvergleichbar, ohne das Feature-Template neu zu initialisieren.
 

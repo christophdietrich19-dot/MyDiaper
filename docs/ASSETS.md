@@ -6,7 +6,13 @@ Stand: 14.09.2026. Diese Dateien gehören zur lokalen internen Testversion.
 
 - Quelle: Nutzerdatei `ChatGPT Image 11. Sept. 2026, 17_48_58.png`.
 - Projektdatei: `assets/images/design-reference.png` (unveränderte Kopie).
-- Verwendung: SVG-Viewports in `js/ui/visuals.js` zeigen das Beispielprofilbild, Wortlogo, Produktabbildungen, dm-Logo und die Beispielkarte. Es handelt sich nicht um eine neu bezogene Händlerkarte oder echte Produktfotos aus einem Feed.
+- Verwendung: SVG-Viewports in `js/ui/visuals.js` zeigen das Beispielprofilbild, Wortlogo, Produktabbildungen und dm-Logo. Die frühere statische Beispielkarte wird nicht mehr verwendet; die Kartenbasis stammt nun von OpenStreetMap über Leaflet. Händlerpins und Angebote bleiben Demo-Daten.
+
+## Kartenbibliothek
+
+- Leaflet 1.9.4 liegt lokal unter `assets/vendor/leaflet/` und steht unter der BSD-2-Clause-Lizenz.
+- OpenStreetMap-Kacheln werden zur Laufzeit über HTTPS geladen und in der Karte sichtbar attribuiert.
+- Der Lizenztext liegt in `THIRD_PARTY_NOTICES.md`.
 - Die Vorlage ist eine perspektivische Werbevisualisierung, kein Satz originaler Figma-/SVG-Komponenten. Schriften, responsive Maße und freigestellte Illustrationen sind Annäherungen; eine nachgewiesene Pixelidentität wird nicht behauptet.
 - Weil mehrere UI-Ausschnitte zur Laufzeit direkt aus `design-reference.png` angezeigt werden, ist derzeit auch die vollständige Referenzdatei im Web- und APK-Build enthalten und technisch extrahierbar. Sie enthält keine Familiendaten, muss vor einer öffentlichen Veröffentlichung aber durch rechtlich freigegebene Produktionsassets ersetzt werden.
 - Vor Veröffentlichung müssen Rechte an Referenz-, Personen-, Marken-, Produkt- und Kartendarstellungen sowie erforderliche Attributionen geklärt bzw. die Beispiele durch freigegebene Produktionsassets ersetzt werden. Das Nutzerbild stellt keine pauschale Veröffentlichungslizenz dar.

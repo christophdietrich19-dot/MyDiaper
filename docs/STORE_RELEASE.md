@@ -50,6 +50,8 @@ Für Store Review:
 - Ablehnung respektieren
 - PLZ/Ort manuell als Alternative
 - keine genaue Position öffentlich im Marketplace
+- genaue Geräteposition nur flüchtig für die aktuelle Karte verwenden, nicht lokal speichern
+- keine Hintergrundortung; OSM-Kachelabruf in Datenschutz und Store-Angaben berücksichtigen
 
 ## 7. Kamera/Foto
 - Permission erst beim tatsächlichen Bedarf

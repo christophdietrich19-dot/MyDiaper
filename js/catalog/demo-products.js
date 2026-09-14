@@ -8,7 +8,12 @@
     {id:'brand-babydream',name:'Babydream'},
     {id:'brand-lupilu',name:'Lupilu'},
     {id:'brand-hipp',name:'HiPP'},
-    {id:'brand-lillydoo',name:'Lillydoo'}
+    {id:'brand-lillydoo',name:'Lillydoo'},
+    {id:'brand-rascals',name:'Rascals'},
+    {id:'brand-moltex',name:'Moltex'},
+    {id:'brand-naty',name:'Naty'},
+    {id:'brand-huggies',name:'Huggies'},
+    {id:'brand-molfix',name:'Molfix'}
   ];
   const products=[
     {id:'product-pampers-premium-protection',brandId:'brand-pampers',name:'Premium Protection',category:'day',sizes:['3','4'],traits:['skin','fit']},
@@ -22,8 +27,15 @@
     {id:'product-lupilu-pants',brandId:'brand-lupilu',name:'Pants',category:'pants',sizes:['5','6'],traits:['fit']},
     {id:'product-hipp-babysanft',brandId:'brand-hipp',name:'Babysanft',category:'day',sizes:['3','4','5'],traits:['skin']},
     {id:'product-lillydoo-green',brandId:'brand-lillydoo',name:'Green',category:'day',sizes:['3','4','5'],traits:['eco','skin']},
-    {id:'product-lillydoo-pants',brandId:'brand-lillydoo',name:'Pants',category:'pants',sizes:['5','6'],traits:['fit','eco']}
-  ].map(({sizes,...product})=>({...product,active:true,sourceType:'demo',sizeLabels:sizes}));
+    {id:'product-lillydoo-pants',brandId:'brand-lillydoo',name:'Pants',category:'pants',sizes:['5','6'],traits:['fit','eco']},
+    {id:'product-rascals-premium',brandId:'brand-rascals',name:'Premium Windeln',category:'day',sizes:['2','3','4','5','6'],traits:['fit','absorb']},
+    {id:'product-rascals-pants',brandId:'brand-rascals',name:'Premium BabyPants',category:'pants',sizes:['4','5','6'],traits:['fit','absorb']},
+    {id:'product-moltex-pure-nature',brandId:'brand-moltex',name:'Pure & Nature',category:'day',sizes:['2','3','4','5','6'],traits:['eco','skin']},
+    {id:'product-naty-eco',brandId:'brand-naty',name:'Eco Windeln',category:'day',sizes:['2','3','4','5','6'],traits:['eco','skin']},
+    {id:'product-huggies-little-swimmers',brandId:'brand-huggies',name:'Little Swimmers',category:'swim',sizes:['3','4','5','6'],traits:['fit']},
+    {id:'product-molfix-comfort-fix',brandId:'brand-molfix',name:'ComfortFix',category:'day',sizes:['2','3','4','5','6','7'],traits:['fit','absorb']},
+    {id:'product-molfix-pants',brandId:'brand-molfix',name:'Pants',category:'pants',sizes:['4','5','6','7'],traits:['fit']}
+  ].map(({sizes,...product})=>({...product,active:true,sourceType:'demo',sourceUrl:'https://www.dm.de/baby-und-kind/windeln/einwegwindeln',reviewedAt:'2026-09-14',sizeLabels:sizes}));
   const sizes=products.flatMap(product=>product.sizeLabels.map(label=>{
     const range=guide.get(label)||{};
     return {id:`size-${product.id.slice(8)}-${label.replace('+','plus')}`,productId:product.id,label,
@@ -42,7 +54,7 @@
   ].map(([id,productSizeId,unitsPerPack])=>({id,productSizeId,unitsPerPack,barcodeEan:null,sourceType:'demo'}));
 
   app.productCatalog={
-    source:{kind:'demo',label:'Interner Testkatalog',verifiedAt:null},
+    source:{kind:'demo',label:'Interner Testkatalog · Händlerseiten geprüft',reviewedAt:'2026-09-14',note:'Produktnamen dienen der lokalen Testauswahl; Packungsgrößen und Preise sind keine Live-Herstellerdaten.'},
     brands,products,sizes,packages
   };
 })(globalThis);

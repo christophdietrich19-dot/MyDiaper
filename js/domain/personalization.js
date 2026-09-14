@@ -2,7 +2,7 @@
   'use strict';
   const app=root.MyDiaper=root.MyDiaper||{};
   const domain=app.domain=app.domain||{};
-  const ratings=['fitRating','leakRating','nightRating','skinComfortRating'];
+  const ratings=['fitRating','leakRating','nightRating','skinComfortRating','priceValueRating'];
   const tendencies=['small','normal','large'];
   const priorityTips={
     skin:'Hautverträglichkeit zunächst mit einer kleinen Menge im Alltag beobachten.',
@@ -27,6 +27,10 @@
       if(typeof input.avoidRecommendation!=='boolean') throw new Error('Ungültige Empfehlungseinstellung.');
       result.avoidRecommendation=input.avoidRecommendation;
     }
+    if(input.wouldBuyAgain!==undefined&&input.wouldBuyAgain!==null){
+      if(typeof input.wouldBuyAgain!=='boolean')throw new Error('Ungültige Wiederkauf-Auswahl.');
+      result.wouldBuyAgain=input.wouldBuyAgain;
+    }else if(input.wouldBuyAgain===null)result.wouldBuyAgain=null;
     if(input.notes!==undefined){
       if(typeof input.notes!=='string') throw new Error('Notizen müssen Text sein.');
       result.notes=input.notes.trim().slice(0,600);

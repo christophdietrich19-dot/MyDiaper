@@ -2,13 +2,16 @@
 
 Stand: 14.09.2026
 
-Die Web-App bleibt direkt über `index.html` nutzbar. Zusätzlich ist sie für eine Capacitor-Hülle vorbereitet. `capacitor.config.json` verwendet `de.christophit.mydiaper`, `MyDiaper` und `www` als Web-Ausgabe.
+Die Web-App bleibt direkt über `index.html` nutzbar. Zusätzlich ist sie für eine Capacitor-Hülle vorbereitet. `capacitor.config.json` verwendet `de.christophit.mydiaper`, `MyDiaper Testversion 1.1.3` und `www` als Web-Ausgabe.
 
 ## Vorhanden
 
 - Build und Sync-Skripte für Android und iOS
 - zentrale Capability-Erkennung in `js/platform/capabilities.js`
-- manueller Barcode- und Standort-Fallback
+- manueller Barcode-Fallback sowie einmalige Standortabfrage mit Ort-/PLZ-Fallback
+- `@capacitor/app` für Android-Zurück und `@capacitor/geolocation` für die ausdrücklich ausgelöste Standortabfrage
+- Leaflet/OSM-Karte; Kartenbasis echt, Händlerpins und Angebote weiterhin Demo
+- Android-Seitenzoom nur in der nativen WebView deaktiviert; Browser-Zoom und Karten-Gesten bleiben erhalten
 - Berechtigungsprinzip: erst erklären, dann bei konkreter Nutzung anfragen
 - lokaler Release-Check mit `npm run release:check`
 - erzeugte und synchronisierte Plattformprojekte in `android/` und `ios/`
@@ -45,7 +48,7 @@ Android kann anschließend über Android Studio geöffnet werden. Ein iOS-Build 
 
 ## Noch nicht als fertig ausgeben
 
-- Scanner, Kamera, Standort, Push und Share benötigen jeweils ausgewählte Capacitor-Plugins, native Berechtigungsbeschreibungen und Gerätetests.
+- Geolocation und Android-App-Navigation sind technisch integriert, benötigen aber noch die Prüfung auf einem physischen Gerät. Scanner, Kamera, Push und Share benötigen weiterhin ausgewählte Capacitor-Plugins, native Berechtigungsbeschreibungen und Gerätetests.
 - Weder die Debug-APK noch die interne Release-Test-APK sind Store-Artefakte. Für eine Veröffentlichung werden weiterhin ein signiertes AAB, die endgültige Upload-Key-/Play-App-Signing-Strategie und die Prüfung in der tatsächlichen Release-Umgebung benötigt.
 - Der aktuelle Build wurde noch nicht auf einem physischen Android-Gerät oder Emulator ausgeführt.
 - Signierung, Bundle-/Package-Registrierung und Store-Zertifikate hängen von den Store-Konten ab.

@@ -24,6 +24,10 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>MyDiaper verwendet deinen Standort nur nach deinem Tippen, um die Karte einmalig auf deine Umgebung auszurichten.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>MyDiaper verwendet deinen Standort nicht im Hintergrund, sondern nur nach deinem Tippen für die aktuelle Kartenansicht.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

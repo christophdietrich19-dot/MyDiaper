@@ -67,18 +67,24 @@
     return {status:'fresh',label:'Kürzlich geprüft'};
   }
   function normalizeAlert(input){
-    const maxUnitPrice=Number(input.maxUnitPrice);
-    if(!Number.isFinite(maxUnitPrice)||maxUnitPrice<=0)throw new Error('Preisgrenze muss größer als 0 sein.');
+    const maxUnitPrice=input.maxUnitPrice==null||input.maxUnitPrice===''?null:Number(input.maxUnitPrice);
+    const maxPackPrice=input.maxPackPrice==null||input.maxPackPrice===''?null:Number(input.maxPackPrice);
+    if(maxUnitPrice!==null&&(!Number.isFinite(maxUnitPrice)||maxUnitPrice<=0))throw new Error('Stückpreisgrenze muss größer als 0 sein.');
+    if(maxPackPrice!==null&&(!Number.isFinite(maxPackPrice)||maxPackPrice<=0))throw new Error('Packungspreisgrenze muss größer als 0 sein.');
+    if(maxUnitPrice===null&&maxPackPrice===null)throw new Error('Bitte mindestens eine Preisgrenze angeben.');
     if(!scopes.includes(input.scope))throw new Error('Ungültiger Preisalarm-Bereich.');
     if(typeof input.enabled!=='boolean')throw new Error('Ungültiger Preisalarm-Status.');
     if(!input.productSizeId)throw new Error('Preisalarm benötigt eine Produktgröße.');
-    return {productSizeId:String(input.productSizeId),maxUnitPrice,scope:input.scope,enabled:input.enabled};
+    const productPackageId=input.productPackageId?String(input.productPackageId):null;
+    if(maxPackPrice!==null&&!productPackageId)throw new Error('Die Packungspreisgrenze benötigt eine genaue Packung.');
+    return {productSizeId:String(input.productSizeId),productPackageId,maxUnitPrice,maxPackPrice,scope:input.scope,enabled:input.enabled};
   }
   function matchesAlert(offer,alert){
     if(!alert?.enabled||offer.productSizeId!==alert.productSizeId)return false;
     if(alert.scope!=='both'&&alert.scope!==offer.scope)return false;
-    const unit=domain.pricing.offerUnitPrice(offer);
-    return unit!==null&&unit<=alert.maxUnitPrice;
+    const unit=domain.pricing.offerUnitPrice(offer),unitHit=alert.maxUnitPrice!==null&&unit!==null&&unit<=alert.maxUnitPrice;
+    const packHit=alert.maxPackPrice!==null&&alert.productPackageId===offer.productPackageId&&offer.price<=alert.maxPackPrice;
+    return unitHit||packHit;
   }
 
   function parseInput(input){

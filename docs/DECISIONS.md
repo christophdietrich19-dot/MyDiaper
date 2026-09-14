@@ -116,7 +116,7 @@ Alter und Präferenzen bleiben vorerst nur UI-Eingaben; sie sind keine implement
 
 Status: umgesetzt, 11.09.2026
 
-Die Startseite verwendet tatsächliche lokale Verbrauchs-/Vorratswerte. Die Vorlage begründet weder erfasste Trockenphasen noch Gesundheitszustände; diese Aussagen werden nicht erfunden. Der manuelle Standort bleibt unverändert. Die Berliner Karte ist ausdrücklich eine statische Beispielkarte, keine Standortermittlung oder echte Umgebungssuche.
+Die Startseite verwendet tatsächliche lokale Verbrauchs-/Vorratswerte. Die Vorlage begründet weder erfasste Trockenphasen noch Gesundheitszustände; diese Aussagen werden nicht erfunden. Die damalige statische Berliner Beispielkarte wurde in ADR-039 durch eine echte Kartenbasis mit weiterhin klaren Demo-Markern ersetzt.
 
 Zwei Referenz-Demo-Angebote reproduzieren die Beispielpreise/Produkte der Vorlage. Die Gesamtliste enthält zusätzlich sämtliche bisherigen lokalen Demo-Angebote; Online-Angebote bleiben getrennt. Stückpreise und Sortierung verwenden das Pricing-Domain-Modul. Favoriten sind accountbezogene Einstellungen (`settings.favoriteOfferIds`), keine Kinddaten; das schemaerweiterbare Settings-Objekt benötigt dafür keine v3-Migration. Echte Händlerfeeds, Routing und Geocoding sind weiterhin nicht implementiert.
 
@@ -180,7 +180,7 @@ Importierte Quellen liegen separat unter `mydiaper-offer-imports-v1`. Ein erneut
 
 Status: umgesetzt, 12.09.2026
 
-Vor einer Backend- und Auth-Entscheidung erhält die lokale Testversion Datenportabilität über den Umschlag `mydiaper-family-backup` Version 1. Er enthält den vollständigen Familienzustand des aktuellen Schemas und einen Exportzeitpunkt. Beim Einlesen validiert die bestehende Modellgrenze sämtliche IDs, Eigentümerschaften, Produktreferenzen und Werte, bevor der Store den Zustand atomar ersetzt. Ein Browseradapter kapselt Datei-Lesen und -Download, damit UI und Domain keine direkten Plattformaufrufe vermischen. Ältere Schema-v1-bis-v3-Backups werden beim Import auf v4 migriert.
+Vor einer Backend- und Auth-Entscheidung erhält die lokale Testversion Datenportabilität über den Umschlag `mydiaper-family-backup` Version 1. Er enthält den vollständigen Familienzustand des aktuellen Schemas und einen Exportzeitpunkt. Beim Einlesen validiert die bestehende Modellgrenze sämtliche IDs, Eigentümerschaften, Produktreferenzen und Werte, bevor der Store den Zustand atomar ersetzt. Ein Browseradapter kapselt Datei-Lesen und -Download, damit UI und Domain keine direkten Plattformaufrufe vermischen. Ältere Schema-v1-bis-v4-Backups werden beim Import auf das jeweils aktuelle Schema migriert.
 
 ## ADR-028 — Schema v4 für vollständige lokale Verwaltung
 
@@ -235,6 +235,42 @@ Die schlafende Babyillustration wird in Salbei-/Mint- und Cremetönen statt gesc
 Status: umgesetzt, 14.09.2026
 
 `js/domain/age-bands.js` kapselt die Altersstufen und ihre Ableitung aus dem Geburtsdatum. Der Finder differenziert bis zum vierten Lebensjahr, bietet für Nachtwindeln zusätzlich vier bis sechs Jahre und danach eine offene Kategorie „6+ Jahre · individuell“. Das berücksichtigt längere Nacht- und individuelle Windelnutzung, ohne ältere Kinder auszuschließen. Die Altersangabe verändert weder gespeichertes Profil noch Größenempfehlung: Gewicht, Herstellerbereich und tatsächliche Passform bleiben dafür maßgeblich.
+
+## ADR-037 — Schema v5 für Begrüßung, Vorratsorte und Windelwechsel
+
+Status: umgesetzt, 14.09.2026
+
+`schemaVersion: 5` und `mydiaper-v5-state` ergänzen eine bestätigte Begrüßungswahl, Lagerorte und Produktschnappschüsse an Vorratslosen sowie strukturierte Windelwechsel. Bestehende v1-bis-v4-Schlüssel werden nur gelesen und bleiben als Sicherung unverändert. Alte Verbrauchsereignisse erhalten `contents: unknown`, weil ihr Inhalt nicht nachträglich erfunden werden darf. Alte Vorräte erhalten den neutralen Lagerort „Zuhause“ und einen Schnappschuss ihres damaligen Sets. Das Wechselereignis speichert die tatsächlich berührten Lose, damit Rückgängig genau diese Bestände wiederherstellen kann; ein inzwischen gelöschtes Los wird ersatzweise als gekennzeichnetes Rückgängig-Los wieder angelegt.
+
+## ADR-038 — Produktauswahl strukturiert, persönliche Eingabe weiterhin möglich
+
+Status: umgesetzt, 14.09.2026
+
+Vorrat und Windelsets verwenden denselben UI-Picker in der Reihenfolge Windelart, Marke, Produktlinie, Größe und optional Packung. Suche und Zweckfilter arbeiten auf dem internen Testkatalog. Eine manuelle Alternative bleibt erhalten, weil der Katalog weder vollständig noch als Herstellerdatenbank behauptet wird. Vorratslose speichern Katalog-IDs und einen damaligen Produktschnappschuss; spätere Änderungen am Set schreiben alte Lose nicht um. Der Testkatalog wurde um Rascals, Moltex, Naty, Huggies Little Swimmers und Molfix ergänzt. Namen und Größen dienen der Testauswahl, nicht als Live-Verfügbarkeits- oder Leistungsaussage.
+
+## ADR-039 — Echte Kartenbasis, aber keine erfundene Händlersuche
+
+Status: umgesetzt, 14.09.2026
+
+`js/ui/offer-map.js` kapselt Leaflet 1.9.4 und OpenStreetMap-Kacheln. Leaflet wird lokal gebündelt; die Karte zeigt die vorgeschriebene OSM-Attribution. Händlerpins, Distanzen und Preise bleiben Demo-Daten, bis ein rechtlich und technisch geeigneter Angebots-/Filialdatenprovider feststeht. Standort wird ausschließlich nach ausdrücklichem Tippen einmalig über `js/platform/location.js` abgefragt. Die genauen Koordinaten bleiben flüchtig in der laufenden UI-Sitzung und werden weder in `localStorage` geschrieben noch im Hintergrund beobachtet. Ort/PLZ bleibt der speicherbare Fallback.
+
+## ADR-040 — Mobile Dialog- und Zurück-Navigation ohne Navigationsumbau
+
+Status: umgesetzt, 14.09.2026
+
+Die bestehende Fünf-Bereich-Navigation bleibt unverändert. Modals sperren die darunterliegende Seite, enthalten ihren eigenen Scrollbereich, berücksichtigen Safe-Areas und fragen beim Schließen geänderter Formulare nach. Android-Zurück schließt zuerst einen Dialog, geht im Finder einen Schritt zurück, führt von Unterseiten zu Heute und beendet die App erst nach dem zweiten Druck innerhalb von zwei Sekunden. Der Erststart-Begrüßungsdialog kann nicht versehentlich per Zurück oder Hintergrundtippen geschlossen werden.
+
+## ADR-041 — APK-spezifischer Seitenzoom und freiwillige Karteninteraktion
+
+Status: umgesetzt, 14.09.2026
+
+Nur die Android-WebView deaktiviert Seitenzoom und Zoom-Bedienelemente in `MainActivity`. Der direkte Browser-/PWA-Start behält Browser-Zoom und Bedienungshilfen. Leaflet verarbeitet seine Karten-Gesten unabhängig davon. Diese native Abweichung verhindert versehentliches Zoomen der App-Oberfläche, ohne den Webzugang oder die Kartenbedienung global einzuschränken.
+
+## ADR-042 — Preisalarme und Erfahrungen bleiben getrennte persönliche Signale
+
+Status: umgesetzt, 14.09.2026
+
+Ein Preisalarm kann eine Stückpreisgrenze, eine Packungspreisgrenze für exakt eine bekannte `productPackageId` oder beide Werte enthalten. Die beiden Trefferbedingungen werden als Oder-Verknüpfung ausgewertet; Bereich, Kind und Produktgröße bleiben Pflichtgrenzen. Produkterfahrungen speichern Preis-Leistung und Wiederkauf getrennt von „nicht erneut empfehlen“. Dadurch wird eine Bewertung nicht stillschweigend als Kaufentscheidung interpretiert. Alle Werte bleiben lokal pro Kind und Windelset.
 
 ## ADR-036 — Mobile Darstellungsfehler werden an der Ursache und mit Regressionstests behoben
 

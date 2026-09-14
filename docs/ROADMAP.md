@@ -20,7 +20,7 @@ Status: lokal abgeschlossen am 12.09.2026
 Ziel: sauberer lokaler MVP ohne Backend.
 
 ### Aufgaben
-Umgesetzt (11.–12.09.2026): normalisierte kinder-/setgebundene lokale Daten, v1/v2/v3→v4-Migration, getrennte Domain-Regeln, vollständige lokale Kinder-/Set-/Vorratspostenverwaltung, Fit-/Erfahrungs-/Produkt-/Größenverlauf, Finder-Signale, strukturierter Testkatalog, EAN-Prüfung und lokale Korrekturentwürfe, Demo-OfferProvider, Preisalarme, Angebotsimport, Familien-Backup, konfigurierbare Reminder, strukturierte Börsen-Demo, Accessibility-Basis, Referenzgestaltung und automatisierte Tests. Kein Framework-Wechsel.
+Umgesetzt (11.–14.09.2026): normalisierte kinder-/setgebundene lokale Daten, v1/v2/v3/v4→v5-Migration, getrennte Domain-Regeln, vollständige lokale Kinder-/Set-/Vorratspostenverwaltung mit Lagerorten und Produktschnappschüssen, Windelwechsel samt Tages-/Wochenübersicht und Rückgängig, Fit-/Erfahrungs-/Produkt-/Größenverlauf, Begrüßungswahl, Finder-Signale, erweiterter strukturierter Testkatalog, EAN-Prüfung und lokale Korrekturentwürfe, Demo-OfferProvider, Stück-/Packungspreisalarme, Angebotsimport, Familien-Backup, konfigurierbare Reminder, strukturierte Börsen-Demo, Leaflet-/OSM-Karte, Accessibility-Basis, Referenzgestaltung und automatisierte Tests. Kein Framework-Wechsel.
 
 - Datenmodelle vereinheitlichen
 - Kinder anlegen/bearbeiten/archivieren/wiederherstellen/löschen — umgesetzt
@@ -82,13 +82,13 @@ Umgesetzt (11.–12.09.2026): normalisierte kinder-/setgebundene lokale Daten, v
 - Versandkosten
 - Gültigkeitszeitraum
 - Favoriten — lokal umgesetzt
-- Preisalarme — lokal umgesetzt, echte Feed-/Push-Auslösung ausstehend
+- Preisalarme für Stückpreis und exakte Packung — lokal umgesetzt, echte Feed-/Push-Auslösung ausstehend
 - optionale Affiliate-Kennzeichnung
 
 ## Phase 6 — Native Funktionen
 - Capacitor-Konfiguration, Capability-Grenze, Skripte und Anleitung — umgesetzt
 - Capacitor Android/iOS
-- Standort mit Permission + PLZ-Fallback
+- einmaliger Standort mit Permission + PLZ-Fallback — technisch umgesetzt, physischer Gerätetest ausstehend
 - Barcode-Scanner
 - Kamera für Listing-Bilder
 - Push Notifications

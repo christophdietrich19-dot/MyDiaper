@@ -1,27 +1,29 @@
 (function(root){
   'use strict';
   const app = root.MyDiaper = root.MyDiaper || {};
-  const KEY = 'mydiaper-v4-state';
-  const PREVIOUS_KEY = 'mydiaper-v3-state';
-  const LEGACY_KEY = 'mydiaper-v2-state';
-  const FIRST_KEY = 'mydiaper-v1-state';
+  const KEY = 'mydiaper-v5-state';
+  const PREVIOUS_KEY = 'mydiaper-v4-state';
+  const LEGACY_KEY = 'mydiaper-v3-state';
+  const FIRST_KEY = 'mydiaper-v2-state';
+  const OLDEST_KEY = 'mydiaper-v1-state';
   function createStore(storage, defaults){
     const model = app.domain.model;
     const listeners = new Set();
     let state, memoryOnly = !storage, readOnly = false, warning = null;
-    let current = null, previous = null, legacy = null, first = null, sourceKey = null;
+    let current = null, previous = null, legacy = null, first = null, oldest = null, sourceKey = null;
     if(storage){
       try {
         current = storage.getItem(KEY);
         previous = current === null ? storage.getItem(PREVIOUS_KEY) : null;
         legacy = current === null && previous === null ? storage.getItem(LEGACY_KEY) : null;
         first = current === null && previous === null && legacy === null ? storage.getItem(FIRST_KEY) : null;
-        sourceKey = current !== null ? KEY : previous !== null ? PREVIOUS_KEY : legacy !== null ? LEGACY_KEY : first !== null ? FIRST_KEY : null;
+        oldest = current === null && previous === null && legacy === null && first === null ? storage.getItem(OLDEST_KEY) : null;
+        sourceKey = current !== null ? KEY : previous !== null ? PREVIOUS_KEY : legacy !== null ? LEGACY_KEY : first !== null ? FIRST_KEY : oldest !== null ? OLDEST_KEY : null;
       }
       catch(error){ memoryOnly = true; }
     }
     try {
-      const raw = current !== null ? current : previous !== null ? previous : legacy !== null ? legacy : first;
+      const raw = current !== null ? current : previous !== null ? previous : legacy !== null ? legacy : first !== null ? first : oldest;
       const decoded = raw !== null ? JSON.parse(raw) : null;
       if(raw !== null && (!decoded || typeof decoded !== 'object' || Array.isArray(decoded))){
         throw new Error('Ungültiger gespeicherter Zustand.');
@@ -59,6 +61,6 @@
       subscribe:fn => { listeners.add(fn); return () => listeners.delete(fn); }
     };
   }
-  app.storage = {createStore, KEY, PREVIOUS_KEY, LEGACY_KEY, FIRST_KEY};
+  app.storage = {createStore, KEY, PREVIOUS_KEY, LEGACY_KEY, FIRST_KEY, OLDEST_KEY};
   if(typeof module !== 'undefined' && module.exports) module.exports = app.storage;
 })(globalThis);

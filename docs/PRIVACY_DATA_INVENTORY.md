@@ -1,15 +1,16 @@
 # Datenschutz-Dateninventar — Arbeitsstand
 
-Stand: 12.09.2026. Dieses Dokument ist eine technische Bestandsaufnahme, keine fertige Datenschutzerklärung oder Rechtsberatung.
+Stand: 14.09.2026. Dieses Dokument ist eine technische Bestandsaufnahme, keine fertige Datenschutzerklärung oder Rechtsberatung.
 
 ## Aktuelle lokale Testversion
 
 | Datenbereich | Beispiele | Zweck | Speicherort | Übertragung |
 | --- | --- | --- | --- | --- |
 | Kinderprofile | Name/Spitzname, Geburtsdatum, Gewicht, Größe | persönliche Windelverwaltung | `localStorage` / lokaler App-Speicher | keine |
-| Windelsets und Vorrat | Marke, Größe, Verbrauch, Packungen | Reichweite und Verlauf | lokal | keine |
-| Fit-Checks und Erfahrungen | Antworten, Bewertungen, Notizen | persönliche Empfehlungen | lokal | keine |
-| Standortangabe | manuell gewählter Ort/PLZ | Angebotsansicht | lokal | keine Live-Abfrage |
+| Windelsets und Vorrat | Marke, Größe, Verbrauch, Packungen, Lagerort | Reichweite und Verlauf | lokal | keine |
+| Windelwechsel | Zeitpunkt, nass/Stuhlgang/beides/trocken, optionale Notiz | Tages-/Wochenübersicht und Vorratsabzug | lokal | keine |
+| Fit-Checks und Erfahrungen | Antworten, Bewertungen, Wiederkauf, Notizen | persönliche Empfehlungen | lokal | keine |
+| Standortangabe | manuell gewählter Ort/PLZ; optional einmalige Geräteposition | Angebotskarte ausrichten | Ort/PLZ lokal; genaue Position nur flüchtig | OSM-Kachelabfrage; keine Übermittlung an MyDiaper-Backend |
 | Angebote/Favoriten | Demo-/Importdaten, Preisgrenzen | Vergleich und Alarm-Vorbereitung | lokal | nur nutzerinitiierter Dateiimport |
 | Börse/Chat | lokale Demo-Anzeigen und Nachrichten | Funktionsprototyp | lokal | keine |
 | Backups | vollständiger Familienzustand | Export/Wiederherstellung | nutzergewählte Datei | nur nutzerinitiiert |
@@ -20,7 +21,7 @@ Die gehärtete Android-Release-Testversion deaktiviert Android-Backups und Gerä
 
 - Konto, Login oder Cloud-Synchronisation
 - Server-Analytics, Werbung oder Tracking
-- Live-Standort oder Hintergrundortung
+- dauerhafte Speicherung des exakten Standorts oder Hintergrundortung
 - Foto-/Kameraupload
 - echte Push-Registrierung
 - öffentliche Listings, Zahlungen oder Realtime-Chat
