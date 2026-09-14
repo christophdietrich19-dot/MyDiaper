@@ -11,7 +11,7 @@
 .child-chip.active { background:var(--surface-soft); border-color:#a9dfd0; box-shadow:0 8px 20px rgba(69,156,132,.12); }
 .avatar { width:48px; height:48px; border-radius:50%; display:grid; place-items:center; font-weight:900; color:#244; font-size:1.1rem; }
 .avatar.small { width:36px; height:36px; font-size:.9rem; }
-.avatar.mint { background:#d9f3e9; }.avatar.blue { background:#ddebfa; }.avatar.peach { background:#fae2d3; }.avatar.lilac { background:#e9ddfa; }
+.avatar.mint { background:#d9f3e9; }.avatar.sage { background:#dfe9d8; }.avatar.sun { background:#fff0b8; }.avatar.blue { background:#ddebfa; }.avatar.peach { background:#fae2d3; }.avatar.lilac { background:#e9ddfa; }
 
 .kpi { display:grid; gap:6px; min-height:112px; }
 .kpi .icon { font-size:1.35rem; }
