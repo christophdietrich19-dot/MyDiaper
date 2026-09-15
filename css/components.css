@@ -63,13 +63,13 @@
 .chat-bubble.them { background:#f0f3f4; justify-self:start; border-bottom-left-radius:5px; }
 .chat-bubble.me { background:#dff4ed; justify-self:end; border-bottom-right-radius:5px; }
 
-.modal-root { position:fixed; inset:0; z-index:50; pointer-events:none; }
+.modal-root { position:fixed; inset:0; z-index:2000; isolation:isolate; pointer-events:none; }
 .modal-root.open { pointer-events:auto; background:rgba(30,44,43,.34); display:grid; place-items:end center; }
 .modal { width:min(100%, 680px); max-height:90vh; overflow:auto; background:white; border-radius:26px 26px 0 0; padding:20px; box-shadow:0 -20px 70px rgba(19,45,38,.20); animation:rise .18s ease-out; }
 .modal-header { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
 .modal-header h2 { margin:0; }
 @keyframes rise { from { transform:translateY(18px); opacity:.6;} to {transform:none; opacity:1;} }
-.toast-root { position:fixed; z-index:60; bottom:100px; left:50%; transform:translateX(-50%); width:min(calc(100% - 28px),520px); display:grid; gap:8px; pointer-events:none; }
+.toast-root { position:fixed; z-index:2100; bottom:100px; left:50%; transform:translateX(-50%); width:min(calc(100% - 28px),520px); display:grid; gap:8px; pointer-events:none; }
 .toast { background:#23342f; color:#fff; border-radius:14px; padding:12px 14px; box-shadow:var(--shadow); animation:fade .2s ease-out; }
 @keyframes fade { from {opacity:0; transform:translateY(6px);} to {opacity:1; transform:none;} }
 

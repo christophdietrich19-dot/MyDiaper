@@ -289,3 +289,11 @@ Die Korrekturversion 1.1.4 behandelt Dialogsperre, Versionsanzeige, Kartenpositi
 `package.json` ist die fachliche Versionsquelle. `scripts/sync-version.js` erzeugt daraus `js/config/app-meta.js` und synchronisiert Capacitor-, PWA-, Android- und iOS-Buildmetadaten. Profilanzeige und Dokumenttitel lesen nur `appMeta`; der Android-Versioncode bleibt eine explizite, monoton steigende Zahl in derselben Paketkonfiguration.
 
 Die Leaflet-Karte verwendet keine fest eingebauten Berliner Marker und keine berechneten Ersatzkoordinaten mehr. Die einmalig angefragte Geräteposition richtet ausschließlich die Karte aus. Ein Händler-/Angebotsmarker entsteht nur, wenn sein Provider gemeinsam einen gültigen Breiten- und Längengrad liefert; ein kontrollierter Import kann diese optionalen Felder enthalten. Marker und Liste referenzieren dieselbe Angebots-ID. Ohne echten Händlerfeed bleibt die Liste als Demo gekennzeichnet, wird aber nicht räumlich als vermeintlich real dargestellt.
+
+## ADR-044 — Karten- und Dialogebenen werden technisch getrennt
+
+Status: umgesetzt, 15.09.2026
+
+Testversion 1.1.5 behebt die Überlagerung des Standortdialogs durch interne Leaflet-Ebenen. Der Kartencontainer erzeugt mit `isolation: isolate` und `z-index: 0` einen eigenen Stapelkontext. Die zentrale `modal-root`-Ebene liegt mit einem festen Wert oberhalb der höchsten gebündelten Leaflet-Ebene; Toasts bleiben wiederum oberhalb der Dialoge. Damit kann kein Marker, Kartensteuerelement oder Kartenpane visuell in einen Dialog hineinragen.
+
+Die bestehende Scrollsperre wird um eine Interaktionssperre ergänzt: Solange ein Dialog geöffnet ist, erhält die App-Hülle `inert` und `aria-hidden`, während die Karte zusätzlich keine Pointer-Ereignisse annimmt. Beim Schließen werden zuvor vorhandene Attribute exakt wiederhergestellt. Der Dialog bleibt außerhalb der App-Hülle erreichbar, besitzt weiterhin seinen eigenen Scrollbereich und behält die bestehende Gestaltung und Navigation. Ein Regressionstest vergleicht die Dialogebene mit allen Leaflet-`z-index`-Werten und prüft Isolation, Pointer-Sperre sowie den Lebenszyklus der Hintergrundattribute.
