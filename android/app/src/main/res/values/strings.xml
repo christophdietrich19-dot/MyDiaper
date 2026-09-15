@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">MyDiaper Testversion 1.1.4</string>
-    <string name="title_activity_main">MyDiaper Testversion 1.1.4</string>
+    <string name="app_name">MyDiaper Testversion 1.1.5</string>
+    <string name="title_activity_main">MyDiaper Testversion 1.1.5</string>
     <string name="package_name">de.christophit.mydiaper</string>
     <string name="custom_url_scheme">de.christophit.mydiaper</string>
 </resources>
