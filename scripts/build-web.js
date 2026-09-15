@@ -1,8 +1,10 @@
 const fs = require('fs');
 const path = require('path');
+const {syncVersion} = require('./sync-version');
 const root = path.resolve(__dirname, '..');
 const out = path.join(root, 'www');
 const entries = ['index.html','css','js','assets','manifest.webmanifest','sw.js'];
+syncVersion();
 fs.rmSync(out, {recursive:true, force:true});
 fs.mkdirSync(out, {recursive:true});
 for (const entry of entries) fs.cpSync(path.join(root, entry), path.join(out, entry), {recursive:true});

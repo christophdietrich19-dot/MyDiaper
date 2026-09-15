@@ -5,6 +5,7 @@ const root=path.resolve(__dirname,'..');
 const strict=process.argv.includes('--store');
 const required=[
   'index.html','manifest.webmanifest','capacitor.config.json',
+  'js/config/app-meta.js','js/ui/feedback.js','js/ui/offer-map.js','scripts/sync-version.js',
   'assets/icons/icon-192.png','assets/icons/icon-512.png',
   'android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png',
   'android/app/src/main/res/drawable-port-xxxhdpi/splash.png',
@@ -18,12 +19,25 @@ const required=[
   'docs/OPERATOR_QUESTIONNAIRE.md','docs/NATIVE_READINESS.md','docs/MARKETPLACE_LOCAL_DEMO.md'
 ];
 const failures=[],gates=[];
+let capacitorConfig=null;
 for(const file of required)if(!fs.existsSync(path.join(root,file)))failures.push(`Fehlt: ${file}`);
 try{
-  const config=JSON.parse(fs.readFileSync(path.join(root,'capacitor.config.json'),'utf8'));
-  if(!/^[a-z][a-z0-9]*(\.[a-z0-9-]+)+$/i.test(config.appId||''))failures.push('Capacitor appId ist ungültig.');
-  if(config.webDir!=='www')failures.push('Capacitor webDir muss auf www zeigen.');
+  capacitorConfig=JSON.parse(fs.readFileSync(path.join(root,'capacitor.config.json'),'utf8'));
+  if(!/^[a-z][a-z0-9]*(\.[a-z0-9-]+)+$/i.test(capacitorConfig.appId||''))failures.push('Capacitor appId ist ungültig.');
+  if(capacitorConfig.webDir!=='www')failures.push('Capacitor webDir muss auf www zeigen.');
 }catch(error){failures.push(`Capacitor-Konfiguration: ${error.message}`);}
+try{
+  const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
+  const version=String(pkg.version||'').replace(/-test$/,'');
+  const displayName=`MyDiaper Testversion ${version}`;
+  const meta=fs.readFileSync(path.join(root,'js/config/app-meta.js'),'utf8');
+  const gradle=fs.readFileSync(path.join(root,'android/app/build.gradle'),'utf8');
+  const strings=fs.readFileSync(path.join(root,'android/app/src/main/res/values/strings.xml'),'utf8');
+  if(!meta.includes(`version:${JSON.stringify(version)}`)||!meta.includes(`packageVersion:${JSON.stringify(pkg.version)}`)||!meta.includes(`displayName:${JSON.stringify(displayName)}`))failures.push('Sichtbare App-Metadaten sind nicht mit package.json synchronisiert.');
+  if(capacitorConfig?.appName!==displayName)failures.push('Capacitor-Appname ist nicht mit package.json synchronisiert.');
+  if(!gradle.includes(`versionCode ${pkg.mydiaper?.androidVersionCode}`)||!gradle.includes(`versionName "${pkg.version}"`))failures.push('Android-Buildversion ist nicht mit package.json synchronisiert.');
+  if(!strings.includes(displayName))failures.push('Android-Appname ist nicht mit package.json synchronisiert.');
+}catch(error){failures.push(`Versionssynchronisation: ${error.message}`);}
 try{
   const manifest=fs.readFileSync(path.join(root,'android/app/src/main/AndroidManifest.xml'),'utf8');
   if(!manifest.includes('android:allowBackup="false"'))failures.push('Android-Backups sind nicht deaktiviert.');

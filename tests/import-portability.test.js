@@ -6,7 +6,7 @@ function offerBundle(overrides={}){
   return {
     format:'mydiaper-offers',version:1,
     provider:{key:'wochenmarkt',label:'Kontrollierter Wochenimport'},
-    offers:[{externalId:'kw37-babydry',scope:'local',store:'Familienmarkt',city:'Berlin',distance:2.1,
+    offers:[{externalId:'kw37-babydry',scope:'local',store:'Familienmarkt',city:'Berlin',distance:2.1,latitude:52.52,longitude:13.405,
       productPackageId:'package-pampers-babydry-4-74',price:14.8,oldPrice:19.8,
       verifiedAt:'2026-09-12T10:00:00Z',sourceUrl:'https://example.org/feed/kw37'}],
     ...overrides
@@ -20,10 +20,14 @@ test('Kontrollierter Angebotsimport erzwingt Format, Katalogreferenz und HTTPS-H
   assert.equal(imported.offers[0].productSizeId,'size-pampers-baby-dry-4');
   assert.equal(imported.offers[0].count,74);
   assert.equal(imported.offers[0].sourceType,'import');
+  assert.equal(imported.offers[0].latitude,52.52);
+  assert.equal(imported.offers[0].longitude,13.405);
   assert.equal(app.domain.offers.freshness(imported.offers[0],new Date('2026-09-12T13:00:00Z')).status,'fresh');
   assert.throws(()=>app.domain.offers.normalizeImport(offerBundle({provider:{key:'Demo Quelle',label:'Ungültig'}}),app.productCatalog),/Anbieterschlüssel/);
   assert.throws(()=>app.domain.offers.normalizeImport(offerBundle({offers:[{...offerBundle().offers[0],productPackageId:'unbekannt'}]}),app.productCatalog),/unbekannte Packung/);
   assert.throws(()=>app.domain.offers.normalizeImport(offerBundle({offers:[{...offerBundle().offers[0],sourceUrl:'http://example.org'}]}),app.productCatalog),/HTTPS/);
+  assert.throws(()=>app.domain.offers.normalizeImport(offerBundle({offers:[{...offerBundle().offers[0],longitude:undefined}]}),app.productCatalog),/gemeinsam/);
+  assert.throws(()=>app.domain.offers.normalizeImport(offerBundle({offers:[{...offerBundle().offers[0],latitude:95}]}),app.productCatalog),/Breitengrad/);
 });
 
 test('Importierte Provider bleiben getrennt gespeichert und werden beim gleichen Schlüssel atomar ersetzt',()=>{

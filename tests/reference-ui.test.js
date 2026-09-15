@@ -58,7 +58,7 @@ test('Finder weist ungültiges Gewicht zurück und bleibt im zweiten Schritt',()
 
 test('Karte, Gesamtliste, Online-Angebote, Suche und Favoriten funktionieren',()=>{
   const t=loadApp();t.click('route',{route:'offers'});
-  assert.match(t.elements.get('app').innerHTML,/Echte Karte · Angebotsmarker sind Demo/);
+  assert.match(t.elements.get('app').innerHTML,/Echte Karte · keine erfundenen Händlerpins/);
   t.click('map-store',{id:'reference-rossmann'});
   assert.match(t.elements.get('app').innerHTML,/deal-description"><h3>HiPP/);
   t.click('favorite-offer',{id:'reference-rossmann'});
@@ -73,6 +73,15 @@ test('Karte, Gesamtliste, Online-Angebote, Suche und Favoriten funktionieren',()
   t.submit('offerSearchForm',{query:''});t.click('offer-tab',{mode:'online'});
   assert.match(t.elements.get('app').innerHTML,/Online-Angebote/);
   assert.doesNotMatch(t.elements.get('app').innerHTML,/nearby-map|NaN|undefined/);
+});
+
+test('Identische Hinweise werden nicht gestapelt',()=>{
+  const t=loadApp();
+  t.click('map-store',{id:'unavailable'});
+  t.click('map-store',{id:'unavailable'});
+  t.click('map-store',{id:'unavailable'});
+  assert.equal(t.elements.get('toastRoot').children.length,1);
+  assert.match(t.elements.get('toastRoot').children[0].textContent,/keine Demo-Angebote/);
 });
 
 test('Navigation aus einem Tipp schließt das Modal; Kinderwechsel ist weiter erreichbar',()=>{
