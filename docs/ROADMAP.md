@@ -20,7 +20,7 @@ Status: lokal abgeschlossen am 12.09.2026
 Ziel: sauberer lokaler MVP ohne Backend.
 
 ### Aufgaben
-Umgesetzt (11.–14.09.2026): normalisierte kinder-/setgebundene lokale Daten, v1/v2/v3/v4→v5-Migration, getrennte Domain-Regeln, vollständige lokale Kinder-/Set-/Vorratspostenverwaltung mit Lagerorten und Produktschnappschüssen, Windelwechsel samt Tages-/Wochenübersicht und Rückgängig, Fit-/Erfahrungs-/Produkt-/Größenverlauf, Begrüßungswahl, Finder-Signale, erweiterter strukturierter Testkatalog, EAN-Prüfung und lokale Korrekturentwürfe, Demo-OfferProvider, Stück-/Packungspreisalarme, Angebotsimport, Familien-Backup, konfigurierbare Reminder, strukturierte Börsen-Demo, Leaflet-/OSM-Karte, Accessibility-Basis, Referenzgestaltung und automatisierte Tests. Kein Framework-Wechsel.
+Umgesetzt (11.–15.09.2026): normalisierte kinder-/setgebundene lokale Daten, v1/v2/v3/v4→v5-Migration, getrennte Domain-Regeln, vollständige lokale Kinder-/Set-/Vorratspostenverwaltung mit Lagerorten und Produktschnappschüssen, Windelwechsel samt Tages-/Wochenübersicht und Rückgängig, Fit-/Erfahrungs-/Produkt-/Größenverlauf, Begrüßungswahl, Finder-Signale, erweiterter strukturierter Testkatalog, EAN-Prüfung und lokale Korrekturentwürfe, Demo-OfferProvider, Stück-/Packungspreisalarme, Angebotsimport, Familien-Backup, konfigurierbare Reminder, strukturierte Börsen-Demo, Leaflet-/OSM-Karte ohne künstliche Händlerkoordinaten, einheitliche Dialog-/Toast-Steuerung, zentrale Versionssynchronisation, Accessibility-Basis, Referenzgestaltung und automatisierte Tests. Kein Framework-Wechsel.
 
 - Datenmodelle vereinheitlichen
 - Kinder anlegen/bearbeiten/archivieren/wiederherstellen/löschen — umgesetzt

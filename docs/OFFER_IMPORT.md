@@ -23,6 +23,8 @@ In der App: **Angebote → Eigene Angebote importieren**. Eine `.json`-Datei kan
       "store": "Händlername",
       "city": "Berlin",
       "distance": 1.8,
+      "latitude": 52.52,
+      "longitude": 13.405,
       "productPackageId": "package-pampers-babydry-4-74",
       "price": 14.49,
       "oldPrice": 19.99,
@@ -54,6 +56,7 @@ Alle Werte im Beispiel müssen vor einem echten Import gegen die tatsächliche Q
 ## Optionale Felder
 
 - `storeName`, `city`, `distance`
+- `latitude` und `longitude`: nur gemeinsam; gültige Breiten-/Längengrade. Nur Angebote mit diesen Koordinaten erscheinen als Kartenmarker.
 - `oldPrice`
 - `shippingPrice`, `shipping`
 - `productSizeId`: wird geprüft, wenn zusätzlich angegeben
@@ -70,6 +73,7 @@ Fehlende Prüfzeitpunkte bleiben sichtbar unverifiziert. Fehlende numerische Ver
 - Ungültiger Datensatz: der gesamte Import wird abgewiesen; der vorherige Stand bleibt erhalten.
 - Entfernen: nur die ausgewählte Importquelle wird gelöscht; Demo und Familien-/Kinddaten bleiben erhalten.
 - Speicherung: `mydiaper-offer-imports-v1`, getrennt vom Familienzustand.
+- Karte: Es gibt keine künstlichen Ersatzkoordinaten. Ein Marker öffnet exakt dasselbe Angebot wie die Listenansicht.
 
 ## Noch nicht enthalten
 

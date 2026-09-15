@@ -279,3 +279,13 @@ Status: umgesetzt, 14.09.2026
 Die Fehler aus dem Android-Test von Version 1.1.1 werden in Version 1.1.2 ohne Navigations- oder Designwechsel korrigiert. Das Babyasset besitzt echte Alpha-Transparenz und wird kleiner außerhalb des Textbereichs positioniert. Der Profilkopf reserviert Illustration und Text zwei getrennte Grid-Spalten, damit der Elefant auch bei 320 Pixel Breite keine Beschreibung überdeckt. Profilkarten verwenden `minmax(0,1fr)` plus eine explizite zweispaltige Aktionsgruppe; innere Texte dürfen schrumpfen und überbreite Inhalte erzeugen keinen horizontalen Viewport.
 
 Für Systemleisten verwendet Capacitor 8 ausdrücklich `SystemBars.insetsHandling = css`. Die injizierten `--safe-area-inset-*`-Werte werden mit CSS-`env()` als Web-/PWA-Fallback in gemeinsame App-Variablen überführt. Bottom-Navigation, Seitenabstand und Finder-Footer verwenden dieselben Werte. Die Toggle-Komponente besitzt feste Maße; ihr Punkt wird mit `top: 50%` und einer gemeinsamen Translation vertikal und horizontal zentriert. `mobile-ui-regressions.test.js` schützt Alpha-Kanal, Profilgeometrie, Insets-Verkabelung und Toggle-Maße vor Rückfällen.
+
+## ADR-043 — Fehlerprotokoll 1.1.3 wird mit zentralen UI- und Release-Grenzen behoben
+
+Status: umgesetzt, 15.09.2026
+
+Die Korrekturversion 1.1.4 behandelt Dialogsperre, Versionsanzeige, Kartenpositionen und Toasts als gemeinsame Infrastruktur statt als einzelne Bildschirm-Sonderfälle. `js/ui/feedback.js` sperrt bei jedem Modal sowohl `html` als auch `body`, fixiert den Seitenstand und stellt ihn beim Schließen wieder her. Der Modalinhalt bleibt der einzige vertikale Scrollbereich. Dieselbe Komponente dedupliziert Meldungen anhand Typ und Text, startet bei Wiederholung nur ihre Anzeigedauer neu und begrenzt die sichtbare Menge auf drei unterschiedliche Hinweise.
+
+`package.json` ist die fachliche Versionsquelle. `scripts/sync-version.js` erzeugt daraus `js/config/app-meta.js` und synchronisiert Capacitor-, PWA-, Android- und iOS-Buildmetadaten. Profilanzeige und Dokumenttitel lesen nur `appMeta`; der Android-Versioncode bleibt eine explizite, monoton steigende Zahl in derselben Paketkonfiguration.
+
+Die Leaflet-Karte verwendet keine fest eingebauten Berliner Marker und keine berechneten Ersatzkoordinaten mehr. Die einmalig angefragte Geräteposition richtet ausschließlich die Karte aus. Ein Händler-/Angebotsmarker entsteht nur, wenn sein Provider gemeinsam einen gültigen Breiten- und Längengrad liefert; ein kontrollierter Import kann diese optionalen Felder enthalten. Marker und Liste referenzieren dieselbe Angebots-ID. Ohne echten Händlerfeed bleibt die Liste als Demo gekennzeichnet, wird aber nicht räumlich als vermeintlich real dargestellt.

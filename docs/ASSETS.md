@@ -6,7 +6,7 @@ Stand: 14.09.2026. Diese Dateien gehören zur lokalen internen Testversion.
 
 - Quelle: Nutzerdatei `ChatGPT Image 11. Sept. 2026, 17_48_58.png`.
 - Projektdatei: `assets/images/design-reference.png` (unveränderte Kopie).
-- Verwendung: SVG-Viewports in `js/ui/visuals.js` zeigen das Beispielprofilbild, Wortlogo, Produktabbildungen und dm-Logo. Die frühere statische Beispielkarte wird nicht mehr verwendet; die Kartenbasis stammt nun von OpenStreetMap über Leaflet. Händlerpins und Angebote bleiben Demo-Daten.
+- Verwendung: SVG-Viewports in `js/ui/visuals.js` zeigen das Beispielprofilbild, Wortlogo, Produktabbildungen und dm-Logo. Die frühere statische Beispielkarte wird nicht mehr verwendet; die Kartenbasis stammt nun von OpenStreetMap über Leaflet. Es werden keine Pins aus der Bildreferenz oder künstlichen Berliner Ersatzkoordinaten erzeugt.
 
 ## Kartenbibliothek
 

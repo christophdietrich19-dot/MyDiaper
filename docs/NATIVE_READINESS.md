@@ -1,8 +1,8 @@
 # Native Vorbereitung
 
-Stand: 14.09.2026
+Stand: 15.09.2026
 
-Die Web-App bleibt direkt über `index.html` nutzbar. Zusätzlich ist sie für eine Capacitor-Hülle vorbereitet. `capacitor.config.json` verwendet `de.christophit.mydiaper`, `MyDiaper Testversion 1.1.3` und `www` als Web-Ausgabe.
+Die Web-App bleibt direkt über `index.html` nutzbar. Zusätzlich ist sie für eine Capacitor-Hülle vorbereitet. `capacitor.config.json` verwendet `de.christophit.mydiaper`, `MyDiaper Testversion 1.1.4` und `www` als Web-Ausgabe.
 
 ## Vorhanden
 
@@ -10,7 +10,8 @@ Die Web-App bleibt direkt über `index.html` nutzbar. Zusätzlich ist sie für e
 - zentrale Capability-Erkennung in `js/platform/capabilities.js`
 - manueller Barcode-Fallback sowie einmalige Standortabfrage mit Ort-/PLZ-Fallback
 - `@capacitor/app` für Android-Zurück und `@capacitor/geolocation` für die ausdrücklich ausgelöste Standortabfrage
-- Leaflet/OSM-Karte; Kartenbasis echt, Händlerpins und Angebote weiterhin Demo
+- Leaflet/OSM-Karte; Kartenbasis echt, keine künstlichen Berliner Pins, Marker nur bei gelieferten und validierten Angebotskoordinaten
+- zentrale Versionssynchronisation aus `package.json` für sichtbare Web-, Android- und iOS-Metadaten
 - Android-Seitenzoom nur in der nativen WebView deaktiviert; Browser-Zoom und Karten-Gesten bleiben erhalten
 - Berechtigungsprinzip: erst erklären, dann bei konkreter Nutzung anfragen
 - lokaler Release-Check mit `npm run release:check`
@@ -25,9 +26,9 @@ Die Web-App bleibt direkt über `index.html` nutzbar. Zusätzlich ist sie für e
 - `gradlew.bat --no-daemon assembleDebug` erzeugt die Debug-APK erfolgreich.
 - `gradlew.bat --no-daemon testDebugUnitTest lintDebug` läuft erfolgreich; der App-Lint meldet keine neuen Probleme.
 - Die APK wurde mit `apksigner` geprüft, ist mit dem Android-Debugzertifikat signiert und enthält die erwarteten MyDiaper-Webressourcen.
-- `npm run android:build:test-release` erzeugt zusätzlich eine gehärtete, R8-optimierte und dauerhaft signierte APK für den vertrauten Testerkreis. Der erfolgreiche Build vom 14.09.2026 ist nicht debug-fähig, schließt App-Daten aus Backups/Geräteübertragung aus, verbietet Klartextverkehr und wurde mit APK Signature Scheme v2/v3 verifiziert.
+- `npm run android:build:test-release` erzeugt zusätzlich eine gehärtete, R8-optimierte und dauerhaft signierte APK für den vertrauten Testerkreis. Der erfolgreiche Build `MyDiaper-Testversion-1.1.4.apk` vom 15.09.2026 ist nicht debug-fähig, schließt App-Daten aus Backups/Geräteübertragung aus, verbietet Klartextverkehr und wurde mit APK Signature Scheme v2/v3 verifiziert. SHA-256: `94b23c97a42d977ff4ed28185bd66e6a88d79129100ba961dbcd0f831d796e74`.
 - Signierzertifikat der Release-Testlinie: `CN=MyDiaper Release, O=MyDiaper, C=DE`; SHA-256 `113e17d0288ddd598eb4191813b42ff5f816bb9c17bb8e3e88ed42764b072ae6`.
-- Paketname: `de.christophit.mydiaper`; `minSdk 24`, `compileSdk 36`, `targetSdk 36`.
+- Paketname: `de.christophit.mydiaper`; Versioncode `6`, Versionsname `1.1.4-test`; `minSdk 24`, `compileSdk 36`, `targetSdk 36`.
 - Der Capacitor-Doctor bewertet die Android-Projektstruktur als einsatzbereit.
 - Das iOS-Projekt ist erzeugt; ein signierter iOS-Build ist unter Windows nicht möglich und muss auf macOS mit Xcode geprüft werden.
 

@@ -21,7 +21,7 @@ window.MyDiaper = window.MyDiaper || {};
   const screenHeader=(title,back='today',action='')=>`<header class="screen-header"><button class="icon-btn" data-action="route" data-route="${back}" aria-label="Zurück">${icon('back')}</button><h1>${esc(title)}</h1>${action?`<button class="icon-btn" data-action="${action}" aria-label="Angebote suchen">${icon('search')}</button>`:'<span></span>'}</header>`;
   const greeting=()=>{const value=MyDiaper.store.get().settings.salutation||{};return value.choice==='mama'?'Hallo Mama!':value.choice==='papa'?'Hallo Papa!':value.choice==='custom'&&value.customName?`Hallo ${value.customName}!`:value.choice==='none'?'Willkommen!':'Hallo!';};
   const inventoryForChild=childId=>MyDiaper.domain.inventory.forChild(MyDiaper.store.get().inventoryLots,childId);
-  const ctx = {ui,esc,...family,recommendSize,bestOfferForSize,offerCard,childSwitcher,compareOffers:pricing.compareOffers,icon,art,rainbow,screenHeader,greeting,inventoryForChild};
+  const ctx = {ui,esc,...family,recommendSize,bestOfferForSize,offerCard,childSwitcher,compareOffers:pricing.compareOffers,icon,art,rainbow,screenHeader,greeting,inventoryForChild,appMeta:MyDiaper.appMeta};
 
   function render(){
     const fn = MyDiaper.features[ui.route] || MyDiaper.features.today;
@@ -37,16 +37,14 @@ window.MyDiaper = window.MyDiaper || {};
     }else MyDiaper.offerMap?.destroy();
     app.focus({preventScroll:true});
   }
-  function toast(msg){
-    const d=document.createElement('div'); d.className='toast'; d.textContent=msg; d.role='status'; toastRoot.appendChild(d); setTimeout(()=>d.remove(),2600);
-  }
-  let modalReturnFocus=null,modalScrollY=0,modalInitial='',modalDismissible=true;
+  const toasts=MyDiaper.feedback.createToaster(toastRoot,{limit:3,duration:2600});
+  const pageLock=MyDiaper.feedback.createPageLock(document,window);
+  const toast=(msg,type='status')=>toasts.show(msg,type);
+  let modalReturnFocus=null,modalInitial='',modalDismissible=true;
   const isModalOpen=()=>String(modalRoot.className||'').includes('open');
   const formState=()=>typeof modalRoot.querySelectorAll==='function'?[...modalRoot.querySelectorAll('input,select,textarea')].map(input=>`${input.name||input.id}:${input.type==='checkbox'||input.type==='radio'?input.checked:input.value}`).join('|'):'';
-  function lockPage(){modalScrollY=window.scrollY||0;if(!document.body)return;document.body.classList.add('modal-open');document.body.style.top=`-${modalScrollY}px`;}
-  function unlockPage(){if(document.body){document.body.classList.remove('modal-open');document.body.style.top='';}window.scrollTo({top:modalScrollY,left:0,behavior:'instant'});}
-  function closeModal(force=false){if(!isModalOpen())return true;if(!force&&modalInitial&&formState()!==modalInitial&&!confirm('Ungespeicherte Änderungen verwerfen?'))return false;modalRoot.className='modal-root';modalRoot.innerHTML='';unlockPage();if(modalReturnFocus&&typeof modalReturnFocus.focus==='function')modalReturnFocus.focus();modalReturnFocus=null;modalInitial='';return true;}
-  function modal(title,body,options={}){if(isModalOpen())closeModal(true);modalReturnFocus=document.activeElement||null;modalDismissible=options.dismissible!==false;lockPage();modalRoot.className='modal-root open'; modalRoot.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><span class="modal-grabber"></span><div class="modal-header"><h2>${esc(title)}</h2>${modalDismissible?`<button class="icon-btn" data-action="close-modal" aria-label="Dialog schließen">${icon('close')}</button>`:'<span></span>'}</div>${body}</div>`;MyDiaper.productFields?.enhance(modalRoot);setTimeout(()=>{modalInitial=formState();const target=modalRoot.querySelector&&modalRoot.querySelector('input, select, textarea, button');if(target&&typeof target.focus==='function')target.focus();},0); }
+  function closeModal(force=false){if(!isModalOpen())return true;if(!force&&modalInitial&&formState()!==modalInitial&&!confirm('Ungespeicherte Änderungen verwerfen?'))return false;modalRoot.className='modal-root';modalRoot.innerHTML='';pageLock.unlock();if(modalReturnFocus&&typeof modalReturnFocus.focus==='function')modalReturnFocus.focus();modalReturnFocus=null;modalInitial='';return true;}
+  function modal(title,body,options={}){const replacing=isModalOpen();if(!replacing){modalReturnFocus=document.activeElement||null;pageLock.lock();}modalDismissible=options.dismissible!==false;modalRoot.className='modal-root open'; modalRoot.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><span class="modal-grabber"></span><div class="modal-header"><h2>${esc(title)}</h2>${modalDismissible?`<button class="icon-btn" data-action="close-modal" aria-label="Dialog schließen">${icon('close')}</button>`:'<span></span>'}</div>${body}</div>`;MyDiaper.productFields?.enhance(modalRoot);setTimeout(()=>{modalInitial=formState();const target=modalRoot.querySelector&&modalRoot.querySelector('input, select, textarea, button');if(target&&typeof target.focus==='function')target.focus();},0); }
   const dateText=value=>value?new Intl.DateTimeFormat('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(value)):'ohne Datum';
   function showNotifications(){ const c=activeChild(),state=MyDiaper.store.get(),due=MyDiaper.domain.reminders.stockDue(c.days,state.settings.reminders.stock,state.settings.reminderConfig); modal('Benachrichtigungen', `<div class="stack"><div class="card soft"><strong>Vorrat ${due?'wird knapp':'in Ordnung'}</strong><div class="muted">${esc(c.name)}: ${c.stock} Stück · ca. ${family.daysText(c)} Tage · Grenze ${state.settings.reminderConfig.stockDays} Tage</div></div><div class="card soft"><strong>Größe regelmäßig prüfen</strong><div class="muted">Aktueller Gewichts-Richtwert: Größe ${recommendSize(c.weight)} · Intervall ${state.settings.reminderConfig.sizeCheckWeeks} Wochen</div></div></div>`); }
 
@@ -317,6 +315,7 @@ window.MyDiaper = window.MyDiaper || {};
   document.getElementById('desktopBrand').innerHTML=art('brandElephant')+art('wordmark')+'<p>Kleine Schritte. Große Abenteuer.</p><p class="handwritten">Mehr Zeit für das,<br>was wirklich zählt. ♡</p>';
 
   window.addEventListener('keydown',e=>{if(e.key==='Escape'&&modalDismissible)closeModal();});
+  modalRoot.addEventListener('touchmove',e=>{if(e.target===modalRoot)e.preventDefault();},{passive:false});
   render();
   let lastBackAt=0;
   MyDiaper.platform.navigation?.register(()=>{

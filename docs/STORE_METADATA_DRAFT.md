@@ -29,7 +29,7 @@ Stand: 12.09.2026. Texte sind Arbeitsstände; URLs, Betreiberangaben und Markenp
 
 MyDiaper hilft Eltern, Windeln entspannter zu organisieren. Lege mehrere Kinderprofile und für jedes Kind eigene Tages-, Pants-, Nacht- oder Schwimmwindelsets an. Behalte Vorräte und Reichweiten getrennt im Blick, prüfe die Passform und dokumentiere persönliche Produkterfahrungen.
 
-Die Testversion enthält einen strukturierten Produktkatalog, Beispielangebote, lokale Preisalarme und eine lokale Windelbörsen-Demo. Die Kartenbasis ist interaktiv und stammt von OpenStreetMap; Händlerpins, Entfernungen, Demo-Preise und Produktmerkmale sind nicht live. Die aktuelle Version arbeitet ohne Konto und speichert Familiendaten lokal auf dem Gerät. Vor einem öffentlichen Release werden Datenschutz, Moderation, Support und Datenquellen finalisiert.
+Die Testversion enthält einen strukturierten Produktkatalog, Beispielangebote, lokale Preisalarme und eine lokale Windelbörsen-Demo. Die Kartenbasis ist interaktiv und stammt von OpenStreetMap; es gibt keine erfundenen Händlerpins. Marker erscheinen nur für kontrolliert importierte Angebote mit vollständigen Koordinaten. Entfernungen, Demo-Preise und Produktmerkmale sind nicht live. Die aktuelle Version arbeitet ohne Konto und speichert Familiendaten lokal auf dem Gerät. Vor einem öffentlichen Release werden Datenschutz, Moderation, Support und Datenquellen finalisiert.
 
 ## Review Notes — Entwurf
 

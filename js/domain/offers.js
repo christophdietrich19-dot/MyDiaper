@@ -31,6 +31,12 @@
     if(!Number.isFinite(number)||number<0)throw new Error(`Ungültige ${label}.`);
     return number;
   }
+  function coordinateOrNull(value,label,min,max){
+    if(value==null||value==='')return null;
+    const number=Number(value);
+    if(!Number.isFinite(number)||number<min||number>max)throw new Error(`Ungültige ${label}.`);
+    return number;
+  }
   function httpsOrNull(value,label){
     if(value==null||value==='')return null;
     const text=String(value).trim();
@@ -50,11 +56,14 @@
     const resolved=productSizeId?domain.catalog.details(catalog,productSizeId):details;
     const price=Number(raw.price),count=Number(raw.count??pack?.unitsPerPack);
     const shippingPrice=raw.shippingPrice==null?undefined:Number(raw.shippingPrice);
+    const latitude=coordinateOrNull(raw.latitude,'Breitengrad',-90,90),longitude=coordinateOrNull(raw.longitude,'Längengrad',-180,180);
+    if((latitude===null)!==(longitude===null))throw new Error('Angebotskoordinaten müssen vollständig sein.');
     if(!Number.isFinite(price)||price<0||!Number.isInteger(count)||count<=0||
        (shippingPrice!==undefined&&(!Number.isFinite(shippingPrice)||shippingPrice<0)))throw new Error('Ungültige Angebotswerte.');
     return {...raw,productSizeId,productPackageId:raw.productPackageId||null,
       product:raw.product||[resolved?.brand.name,resolved?.product.name].filter(Boolean).join(' '),size:String(raw.size||resolved?.size.label||''),
-      count,price,shippingPrice,verifiedAt:isoOrNull(raw.verifiedAt,'Prüfdatum'),validFrom:isoOrNull(raw.validFrom,'Startdatum'),validUntil:isoOrNull(raw.validUntil,'Enddatum')};
+      count,price,shippingPrice,latitude:latitude===null?undefined:latitude,longitude:longitude===null?undefined:longitude,
+      verifiedAt:isoOrNull(raw.verifiedAt,'Prüfdatum'),validFrom:isoOrNull(raw.validFrom,'Startdatum'),validUntil:isoOrNull(raw.validUntil,'Enddatum')};
   }
   function freshness(offer,now=new Date()){
     if(offer.sourceType==='demo')return {status:'demo',label:'Demo · nicht live geprüft'};
@@ -105,12 +114,15 @@
     if(validFrom&&validUntil&&new Date(validFrom)>new Date(validUntil))throw new Error(`Angebot ${index+1} endet vor seinem Start.`);
     const oldPrice=optionalNumber(item.oldPrice,'frühere Preisangabe');
     const distance=optionalNumber(item.distance,'Entfernung');
+    const latitude=coordinateOrNull(item.latitude,'Breitengrad',-90,90);
+    const longitude=coordinateOrNull(item.longitude,'Längengrad',-180,180);
+    if((latitude===null)!==(longitude===null))throw new Error(`Angebot ${index+1} benötigt Breiten- und Längengrad gemeinsam.`);
     const sourceUrl=httpsOrNull(item.sourceUrl,'Quellen-URL');
     if(item.currency&&String(item.currency).toUpperCase()!=='EUR')throw new Error('Die Testversion unterstützt für Importe derzeit nur EUR.');
     return normalize({
       id:`${providerKey}-${externalId}`,externalId,providerKey,sourceType:'import',scope:item.scope,
       store:requiredText(item.store,`Händler in Angebot ${index+1}`),storeName:optionalText(item.storeName),city:optionalText(item.city),
-      distance:distance===null?undefined:distance,productPackageId:String(item.productPackageId),
+      distance:distance===null?undefined:distance,latitude:latitude===null?undefined:latitude,longitude:longitude===null?undefined:longitude,productPackageId:String(item.productPackageId),
       productSizeId:item.productSizeId?String(item.productSizeId):undefined,price:Number(item.price),
       oldPrice:oldPrice===null?undefined:oldPrice,shippingPrice:item.shippingPrice==null?undefined:Number(item.shippingPrice),
       shipping:optionalText(item.shipping),currency:'EUR',verifiedAt:item.verifiedAt||null,validFrom,validUntil,
@@ -144,7 +156,7 @@
   }
   function importTemplate(){
     return JSON.stringify({format:IMPORT_FORMAT,version:IMPORT_VERSION,provider:{key:'mein-markt',label:'Mein kontrollierter Import'},offers:[{
-      externalId:'angebot-001',scope:'local',store:'Händler eintragen',city:'Ort eintragen',
+      externalId:'angebot-001',scope:'local',store:'Händler eintragen',city:'Ort eintragen',latitude:52.52,longitude:13.405,
       productPackageId:'package-pampers-babydry-4-74',price:14.99,verifiedAt:new Date().toISOString()
     }]},null,2);
   }
