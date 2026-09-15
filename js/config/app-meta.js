@@ -4,10 +4,10 @@
   const meta=Object.freeze({
     name:'MyDiaper',
     channel:"Testversion",
-    version:"1.1.4",
-    packageVersion:"1.1.4-test",
-    androidVersionCode:6,
-    displayName:"MyDiaper Testversion 1.1.4"
+    version:"1.1.5",
+    packageVersion:"1.1.5-test",
+    androidVersionCode:7,
+    displayName:"MyDiaper Testversion 1.1.5"
   });
   app.appMeta=meta;
   if(root.document)root.document.title=meta.displayName;

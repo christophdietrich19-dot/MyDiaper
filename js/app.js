@@ -2,6 +2,7 @@ window.MyDiaper = window.MyDiaper || {};
 
 (function(){
   const app = document.getElementById('app');
+  const appShell = document.getElementById('appShell');
   const modalRoot = document.getElementById('modalRoot');
   const toastRoot = document.getElementById('toastRoot');
   const ui = { route:'today', offerMode:'local', marketFilter:'Alle', marketQuery:'', marketOnlyMine:false, offerView:'map', activityRange:'day', mapLocation:null };
@@ -38,7 +39,7 @@ window.MyDiaper = window.MyDiaper || {};
     app.focus({preventScroll:true});
   }
   const toasts=MyDiaper.feedback.createToaster(toastRoot,{limit:3,duration:2600});
-  const pageLock=MyDiaper.feedback.createPageLock(document,window);
+  const pageLock=MyDiaper.feedback.createPageLock(document,window,appShell);
   const toast=(msg,type='status')=>toasts.show(msg,type);
   let modalReturnFocus=null,modalInitial='',modalDismissible=true;
   const isModalOpen=()=>String(modalRoot.className||'').includes('open');

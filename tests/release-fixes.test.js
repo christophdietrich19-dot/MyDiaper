@@ -9,15 +9,23 @@ const feedback=require('../js/ui/feedback.js');
 const offerMap=require('../js/ui/offer-map.js');
 
 function styledElement(){
-  const classes=new Set();
-  return {style:{},classList:{add:value=>classes.add(value),remove:value=>classes.delete(value),contains:value=>classes.has(value)},classes};
+  const classes=new Set(),attributes=new Map();
+  return {
+    style:{},
+    classList:{add:value=>classes.add(value),remove:value=>classes.delete(value),contains:value=>classes.has(value)},
+    setAttribute:(name,value)=>attributes.set(name,String(value)),
+    getAttribute:name=>attributes.has(name)?attributes.get(name):null,
+    hasAttribute:name=>attributes.has(name),
+    removeAttribute:name=>attributes.delete(name),
+    classes,attributes
+  };
 }
 
 test('Modal-Sperre fixiert beide Dokumentebenen und stellt die Scrollposition wieder her',()=>{
-  const html=styledElement(),body=styledElement(),calls=[];
+  const html=styledElement(),body=styledElement(),background=styledElement(),calls=[];
   body.style.position='relative';
   const view={scrollY:347,scrollTo:value=>calls.push(value)};
-  const lock=feedback.createPageLock({documentElement:html,body},view);
+  const lock=feedback.createPageLock({documentElement:html,body},view,background);
   lock.lock();lock.lock();
   assert.equal(lock.isLocked(),true);
   assert.equal(html.classList.contains('modal-open'),true);
@@ -25,10 +33,27 @@ test('Modal-Sperre fixiert beide Dokumentebenen und stellt die Scrollposition wi
   assert.equal(body.style.position,'fixed');
   assert.equal(body.style.top,'-347px');
   assert.equal(html.style.overflow,'hidden');
+  assert.equal(background.hasAttribute('inert'),true);
+  assert.equal(background.getAttribute('aria-hidden'),'true');
   lock.unlock();
   assert.equal(body.style.position,'relative');
   assert.equal(html.classList.contains('modal-open'),false);
+  assert.equal(background.hasAttribute('inert'),false);
+  assert.equal(background.hasAttribute('aria-hidden'),false);
   assert.deepEqual(calls,[{top:347,left:0,behavior:'instant'}]);
+});
+
+test('Standortdialog liegt über allen Leaflet-Ebenen und sperrt die Hintergrundkarte',()=>{
+  const components=read('css/components.css');
+  const reference=read('css/reference.css');
+  const leaflet=read('assets/vendor/leaflet/leaflet.css');
+  const modalZ=Number(components.match(/\.modal-root\s*\{[^}]*z-index:(\d+)/)?.[1]);
+  const leafletZ=Math.max(...[...leaflet.matchAll(/z-index:\s*(\d+)/g)].map(match=>Number(match[1])));
+  assert.ok(modalZ>leafletZ,`Dialogebene ${modalZ} muss über Leaflet ${leafletZ} liegen.`);
+  assert.match(components,/\.modal-root\s*\{[^}]*isolation:isolate/);
+  assert.match(reference,/\.real-map-wrap\{[^}]*z-index:0;isolation:isolate/);
+  assert.match(reference,/body\.modal-open \.real-map-wrap\{[^}]*pointer-events:none/);
+  assert.match(read('js/app.js'),/createPageLock\(document,window,appShell\)/);
 });
 
 test('Toast-Verwaltung dedupliziert Meldungen, erneuert ihre Zeit und begrenzt die Anzahl',()=>{

@@ -53,7 +53,7 @@
     return {show,dismiss,clear,count:()=>active.size};
   }
 
-  function createPageLock(documentRef=root.document,view=root){
+  function createPageLock(documentRef=root.document,view=root,background=null){
     let locked=false,scrollY=0,saved=null;
     const properties=['position','top','left','right','width','overflow'];
     const capture=element=>element?.style?Object.fromEntries(properties.map(name=>[name,element.style[name]||''])):null;
@@ -62,9 +62,18 @@
       if(locked)return;
       const html=documentRef?.documentElement,body=documentRef?.body;
       scrollY=Number(view?.scrollY)||0;
-      saved={html:capture(html),body:capture(body)};
+      saved={
+        html:capture(html),
+        body:capture(body),
+        background:background?{
+          inert:Boolean(background.hasAttribute?.('inert')),
+          ariaHidden:background.getAttribute?.('aria-hidden')??null
+        }:null
+      };
       html?.classList?.add('modal-open');
       body?.classList?.add('modal-open');
+      background?.setAttribute?.('inert','');
+      background?.setAttribute?.('aria-hidden','true');
       if(html?.style)html.style.overflow='hidden';
       if(body?.style){
         body.style.position='fixed';body.style.top=`-${scrollY}px`;body.style.left='0';body.style.right='0';body.style.width='100%';body.style.overflow='hidden';
@@ -77,6 +86,12 @@
       html?.classList?.remove('modal-open');
       body?.classList?.remove('modal-open');
       restore(html,saved?.html);restore(body,saved?.body);
+      if(background){
+        if(saved?.background?.inert)background.setAttribute?.('inert','');
+        else background.removeAttribute?.('inert');
+        if(saved?.background?.ariaHidden===null)background.removeAttribute?.('aria-hidden');
+        else background.setAttribute?.('aria-hidden',saved.background.ariaHidden);
+      }
       locked=false;saved=null;
       if(typeof view?.scrollTo==='function')view.scrollTo({top:scrollY,left:0,behavior:'instant'});
     }
